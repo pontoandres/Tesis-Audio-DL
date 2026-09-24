@@ -1,0 +1,24 @@
+# Repositorio externo existente
+Automated-GuitarAmpModelling/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Datasets y grabaciones
+data/
+recordings/
+*.wav
+*.mp3
+*.mp4
+*.flac
+
+# Modelos pesados
+*.pt
+*.pth
+*.ckpt
+
+# Archivos temporales
+*.zip
+*.7z
