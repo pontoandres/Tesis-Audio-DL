@@ -5,19 +5,49 @@ from scipy.signal import correlate, correlation_lags
 
 ROOT = Path(__file__).resolve().parents[1]
 
-PAIRS = [
-    ("Starcaster50 TRAIN",
-     ROOT / "data" / "processed" / "starcaster" / "50" / "train" / "starcaster50-input.wav",
-     ROOT / "data" / "processed" / "starcaster" / "50" / "train" / "starcaster50-target.wav"),
+# ============================================================
+# DATASETS TO CHECK
+# ============================================================
 
-    ("Starcaster50 VAL",
-     ROOT / "data" / "processed" / "starcaster" / "50" / "val" / "starcaster50-input.wav",
-     ROOT / "data" / "processed" / "starcaster" / "50" / "val" / "starcaster50-target.wav"),
+PEDAL = "starcaster"
 
-    ("Starcaster50 TEST",
-     ROOT / "data" / "processed" / "starcaster" / "50" / "test" / "starcaster50-input.wav",
-     ROOT / "data" / "processed" / "starcaster" / "50" / "test" / "starcaster50-target.wav"),
-]
+# Descomenta SOLO la combinación que quieras revisar:
+
+# CONFIGS = ("25",)
+# CONFIGS = ("50",)
+# CONFIGS = ("25", "50")
+CONFIGS = ("75", "100")
+# CONFIGS = ("25", "50", "75", "100")
+
+SPLITS = ("train", "val", "test")
+
+
+PAIRS = []
+
+for config in CONFIGS:
+    for split in SPLITS:
+
+        PAIRS.append(
+            (
+                f"{PEDAL.capitalize()}{config} {split.upper()}",
+
+                ROOT
+                / "data"
+                / "processed"
+                / PEDAL
+                / config
+                / split
+                / f"{PEDAL}{config}-input.wav",
+
+                ROOT
+                / "data"
+                / "processed"
+                / PEDAL
+                / config
+                / split
+                / f"{PEDAL}{config}-target.wav",
+            )
+        )
 
 WINDOW_S = 4
 MAX_LAG_MS = 100

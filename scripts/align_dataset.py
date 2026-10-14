@@ -14,23 +14,42 @@ OUTPUT = ROOT / "data" / "processed" / "starcaster"
 PAIRS = [
     ("25", "train", -73142),
     ("50", "train", -73139),
+    ("75", "train", -73137),
+    ("100", "train", -73136),
 
     ("25", "val", 95),
     ("50", "val", 97),
+    ("75", "val", -97806),
+    ("100", "val", -97806),
 
     ("25", "test", 109),
     ("50", "test", -110595),
+    ("75", "test", -110589),
+    ("100", "test", -110589),
 ]
 
 
-# Experimento causal:
-# dejamos 25% intacto por ahora.
-# Para 50%, dejamos el target ~128 samples DESPUÉS del input.
+# Delay causal por configuración y split.
+# Después de la alineación gruesa dejamos el TARGET
+# aproximadamente 128 muestras después del INPUT.
+# Los valores específicos se ajustan usando check_drift.py.
 CAUSAL_DELAY = {
-    "25": 0,
-    "50": 128,
-}
+    ("25", "train"): 144,
+    ("25", "val"): 134,
+    ("25", "test"): 132,
 
+    ("50", "train"): 149,
+    ("50", "val"): 135,
+    ("50", "test"): 127,
+
+    ("75", "train"): 153,
+    ("75", "val"): 135,
+    ("75", "test"): 133,
+
+    ("100", "train"): 153,
+    ("100", "val"): 135,
+    ("100", "test"): 132,
+}
 
 def to_int16(audio):
     """
@@ -195,7 +214,7 @@ def process(config, split, lag):
     )
 
     # 2. Delay causal adicional
-    delay = CAUSAL_DELAY[config]
+    delay = CAUSAL_DELAY[(config, split)]
 
     input_audio, target_audio = add_causal_delay(
         input_audio,

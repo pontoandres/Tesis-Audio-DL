@@ -1,0 +1,6 @@
+{
+    "test_loss": 0.9315442442893982,
+    "test_ESR": 1.008393406867981,
+    "model": "..\\..\\results\\starcaster50_cnn100_causal128_finealign_v1-\\model_best.json",
+    "file_name": "starcaster50"
+}
