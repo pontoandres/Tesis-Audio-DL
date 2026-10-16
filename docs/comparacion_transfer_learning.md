@@ -27,7 +27,7 @@ Menor es mejor para `best val`, `test loss` y `test ESR`.
 | Starcaster 50 | CNN | Big Muff FT | 59 | 33 | **0.214686** | 0.937416 | **1.007249** |
 | Dyna Comp 50 | CNN | Scratch | 27 | 1 | **1.301021** | **0.635206** | **0.854788** |
 | Dyna Comp 50 | CNN | Big Muff FT | 46 | 20 | 1.372579 | 0.725555 | 0.873600 |
-| Starcaster 50 | LSTM32 | Scratch | 100 | 97 | 0.229116 | **0.884839** | 1.035320 |
+| Starcaster 50 | LSTM32 | Scratch | 100 | 96 | 0.229116 | **0.884839** | 1.035320 |
 | Starcaster 50 | LSTM32 | Wright Big Muff FT | 53 | 27 | **0.177793** | 0.933073 | **1.027552** |
 | Dyna Comp 50 | LSTM32 | Scratch | 27 | 1 | **0.766429** | 0.859836 | **0.903959** |
 | Dyna Comp 50 | LSTM32 | Wright Big Muff FT | 27 | 1 | 1.269356 | **0.717394** | 1.052577 |
@@ -40,7 +40,7 @@ Los porcentajes se calculan como `(FT - scratch) / scratch × 100`. Por tanto, p
 |---|---|---:|---:|---:|---:|
 | Starcaster 50 | CNN | **-17.90%** | +0.63% | **-0.11%** | 61 → 33 |
 | Dyna Comp 50 | CNN | +5.50% | +14.22% | +2.20% | 1 → 20 |
-| Starcaster 50 | LSTM32 | **-22.40%** | +5.45% | **-0.75%** | 97 → 27 |
+| Starcaster 50 | LSTM32 | **-22.40%** | +5.45% | **-0.75%** | 96 → 27 |
 | Dyna Comp 50 | LSTM32 | +65.62% | **-16.57%** | +16.44% | 1 → 1 |
 
 ## 4. Interpretación
@@ -51,7 +51,7 @@ La transferencia resulta **útil durante entrenamiento/validación** para las do
 
 En la CNN, el best validation baja de 0.261490 a 0.214686, una reducción de aproximadamente **17.9%**, y el mejor checkpoint aparece en el epoch 33 en lugar del 61. El ESR de test cambia muy poco: 1.008393 → 1.007249.
 
-En la LSTM32, el efecto sobre validación es todavía mayor: 0.229116 → 0.177793, una reducción de aproximadamente **22.4%**. Además, el mejor checkpoint aparece mucho antes, en el epoch 27 frente al 97 del entrenamiento scratch. El ESR de test también mejora ligeramente, 1.035320 → 1.027552, aunque el test loss aumenta.
+En la LSTM32, el efecto sobre validación es todavía mayor: 0.229116 → 0.177793, una reducción de aproximadamente **22.4%**. Además, el mejor checkpoint aparece mucho antes, en el epoch 27 frente al 96 del entrenamiento scratch. El ESR de test también mejora ligeramente, 1.035320 → 1.027552, aunque el test loss aumenta.
 
 Estos resultados apoyan la hipótesis de que una representación aprendida sobre un circuito de distorsión puede proporcionar una inicialización útil para otro pedal de distorsión. La evidencia es especialmente clara en **convergencia y validación**, pero no muestra todavía una mejora fuerte y consistente sobre el split de test.
 
@@ -62,6 +62,8 @@ El comportamiento es considerablemente menos favorable.
 En la CNN, el fine-tuning empeora las tres métricas principales frente a scratch: best validation aumenta 5.5%, test loss 14.2% y test ESR 2.2%.
 
 En la LSTM32 aparecen métricas contradictorias. El fine-tuning reduce el test loss de 0.859836 a 0.717394, pero empeora fuertemente el best validation (0.766429 → 1.269356) y el test ESR (0.903959 → 1.052577). Por ello no puede afirmarse que exista una ventaja consistente de transferencia para compresión.
+
+Las curvas de validación añaden una observación importante: en Dyna Comp, tres de los cuatro experimentos alcanzan su mejor validación en el primer epoch (CNN scratch, LSTM scratch y LSTM fine-tuned). En particular, la LSTM scratch comienza en 0.766429 y luego la pérdida de validación aumenta mientras la pérdida de entrenamiento continúa descendiendo. Este patrón es compatible con sobreajuste temprano o con una diferencia de distribución entre train y validation, y debe investigarse antes de atribuir el comportamiento únicamente a la arquitectura o a la transferencia.
 
 Esto es compatible con la hipótesis experimental de que transferir desde un modelo de **distorsión** hacia un **compresor** es menos directo: el compresor introduce un comportamiento dinámico dependiente de la envolvente temporal que no coincide necesariamente con las representaciones aprendidas para una no linealidad de distorsión.
 
@@ -102,7 +104,7 @@ Resultados utilizados directamente desde el repositorio:
 
 ## 8. Siguientes pasos
 
-- Generar gráficas de validation loss scratch vs. fine-tuning para Starcaster y Dyna Comp.
+- Incorporar al documento las gráficas de validation loss scratch vs. fine-tuning ya generadas para Starcaster y Dyna Comp.
 - Incorporar la TCN con el mismo protocolo experimental.
 - Medir parámetros, tamaño en disco, latencia de inferencia y real-time factor bajo un protocolo común.
 - Escuchar y documentar ejemplos de audio generados por los checkpoints de mejor validación.
