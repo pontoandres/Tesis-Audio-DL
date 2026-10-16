@@ -12,7 +12,7 @@
 
 **\*\*Repositorio principal:\*\*** \`https\://github.com/pontoandres/Tesis-Audio-DL.git\`  
 
-**\*\*Última actualización de este log:\*\*** 2026-10-13  
+**\*\*Última actualización de este log:\*\*** 2026-10-16  
 
 **\*\*Estado del documento:\*\*** vivo / acumulativo. No borrar entradas históricas; corregirlas mediante notas posteriores cuando haga falta.
 
@@ -218,11 +218,19 @@ Control secundario:
 
 
 
-Estado al 2026-10-13:
+Estado al 2026-10-16:
 
-\- las grabaciones del compresor **\*\*todavía no se han realizado\*\***;
+\- se completaron las grabaciones del MXR Dyna Comp para Sensitivity 25%, 50%, 75% y 100%;
 
-\- continúa siendo parte obligatoria del alcance.
+\- cada configuración cuenta con train / validation / test;
+
+\- los targets raw fueron verificados, convertidos a mono conservando el canal 0 y procesados a 44.1 kHz PCM16;
+
+\- se completó alineación gruesa, ajuste causal, verificación de drift y sanity check de niveles;
+
+\- las CNN de 25%, 50%, 75% y 100% fueron entrenadas y evaluadas;
+
+\- 0% continúa pendiente / no confirmado experimentalmente.
 
 
 
@@ -972,15 +980,23 @@ Corrección:
 
 
 
-Las capturas wet presentan correlación negativa respecto al dry.
+Las capturas wet del Starcaster presentan correlación negativa respecto al dry.
 
 
 
-Decisión:
+Decisión para Starcaster:
 
 \- **\*\*NO invertir el target\*\***;
 
 \- el modelo debe aprender la transformación física completa observada, incluida la inversión de polaridad.
+
+
+
+Nota posterior para MXR Dyna Comp:
+
+\- el signo de la correlación local no fue estable entre todos los splits / ventanas;
+
+\- por ello, para localizar el pico temporal del compresor se utilizó la magnitud de la correlación dentro de una ventana de búsqueda restringida alrededor del desfase residual esperado, sin invertir artificialmente las señales.
 
 
 
@@ -2798,13 +2814,17 @@ Los cuatro settings no nulos de gain utilizados actualmente (25/50/75/100) tiene
 
 \| 0% | ⏳ | ⏳ | ⏳ | ⏳ |
 
-\| 25% | ⏳ | ⏳ | ⏳ | ⏳ |
+\| 25% | ✅ | ✅ | ✅ | ✅ |
 
-\| 50% | ⏳ | ⏳ | ⏳ | ⏳ |
+\| 50% | ✅ | ✅ | ✅ | ✅ |
 
-\| 75% | ⏳ | ⏳ | ⏳ | ⏳ |
+\| 75% | ✅ | ✅ | ✅ | ✅ |
 
-\| 100% | ⏳ | ⏳ | ⏳ | ⏳ |
+\| 100% | ✅ | ✅ | ✅ | ✅ |
+
+
+
+Los cuatro settings no nulos de Sensitivity utilizados actualmente (25/50/75/100) tienen dataset procesado y CNN entrenada/evaluada.
 
 
 
@@ -2816,9 +2836,9 @@ Los cuatro settings no nulos de gain utilizados actualmente (25/50/75/100) tiene
 
 |---|---|
 
-| CNN | primera ronda Starcaster 25/50/75/100 completada |
+| CNN | primera ronda Starcaster 25/50/75/100 + Dyna Comp 25/50/75/100 completada |
 
-| LSTM | pendiente |
+| LSTM | pendiente; existen checkpoints Big Muff LSTM de Wright (32 y 64 unidades) candidatos para transferencia |
 
 | TCN | pendiente |
 
@@ -3023,6 +3043,15 @@ Para una reunión de avance, el relato técnico consolidado es:
 \> Para comparar las arquitecturas se mantendrán las mismas divisiones de datos y se realizarán las mediciones de eficiencia en un entorno de hardware común. La fidelidad será evaluada mediante ESR y métricas temporales y espectrales, mientras que el costo computacional se caracterizará mediante número de parámetros, tamaño del modelo, tiempo de inferencia y factor de tiempo real.
 
 
+**## 24.6 Adquisición y preparación específica del MXR Dyna Comp**
+
+
+
+\> Para el MXR Dyna Comp se reutilizaron las mismas señales dry empleadas en los experimentos de distorsión. Se variaron posiciones de Sensitivity de 25%, 50%, 75% y 100%, manteniendo fijo el control Output del pedal en su valor máximo. Debido al nivel capturado, se aplicó en Ableton un Clip Gain digital fijo de +6.0 dB a todos los targets del compresor, sin normalización independiente por split ni por configuración. Este ajuste forma parte del protocolo de adquisición del dataset del compresor y debe documentarse como ganancia digital posterior al pedal.
+
+\> Las exportaciones resultaron inicialmente en stereo dual-mono. Se verificó correlación L/R aproximadamente igual a 1 y diferencia de nivel despreciable; posteriormente se conservó el canal 0 y se reemplazaron los archivos de trabajo por versiones mono PCM16 a 44.1 kHz.
+
+
 
 \---
 
@@ -3186,7 +3215,7 @@ Antes de grabar cualquier configuración:
 
 [ ] WARP OFF
 
-[ ] Clip Gain 0 dB
+[ ] Clip Gain según protocolo: Starcaster = 0 dB; MXR Dyna Comp target = +6.0 dB fijo
 
 [ ] no plugins
 
@@ -3222,31 +3251,25 @@ Antes de grabar cualquier configuración:
 
 
 
-Estado al cierre de este log:
+Estado al cierre de esta actualización:
 
 
 
-1\. parametrizar / ejecutar \`compare_splits.py\` para Starcaster 75 y 100;
+1\. ejecutar experimento de transferencia CNN usando como inicialización el GatedConvNet entrenado sobre Big Muff y fine-tuning sobre Starcaster 50 y Dyna Comp 50;
 
-2\. revisar especialmente RMS/peak y confirmar si el mismo test hotter aparece;
+2\. escoger un checkpoint LSTM Big Muff de Wright (32 o 64 unidades) y definir una arquitectura scratch exactamente equivalente;
 
-3\. lanzar CNN 75;
+3\. entrenar LSTM scratch y LSTM fine-tuned al menos para Starcaster 50 y Dyna Comp 50;
 
-4\. lanzar CNN 100 inmediatamente después en serie;
+4\. comparar inicialización aleatoria vs preentrenada usando best validation, test loss, test ESR y velocidad de convergencia;
 
-5\. registrar stats/resultados;
+5\. después continuar con TCN;
 
-6\. comenzar / completar adquisición del compresor;
+6\. estandarizar evaluación de fidelidad y eficiencia;
 
-7\. reutilizar pipeline genérico de alignment + drift;
+7\. construir tablas y gráficas comparativas;
 
-8\. después continuar con LSTM;
-
-9\. después TCN;
-
-10\. estandarizar evaluación de fidelidad y eficiencia;
-
-11\. comenzar ya el borrador del documento usando las secciones “Material reutilizable”.
+8\. continuar redacción del documento usando las secciones “Material reutilizable”.
 
 
 
@@ -3450,7 +3473,7 @@ Así:
 
 \- definir cómo reportar test hotter / OOD;
 
-\- completar compresor;
+\- completar experimento de transferencia / fine-tuning para CNN y LSTM;
 
 \- ejecutar LSTM y TCN;
 
@@ -3468,7 +3491,7 @@ Así:
 
 
 
-**# 32. Resumen ejecutivo de estado — 2026-10-13**
+**# 32. Resumen ejecutivo de estado — 2026-10-16**
 
 
 
@@ -3486,37 +3509,33 @@ El proyecto ya cuenta con:
 
 \- entorno PyTorch/CUDA funcional en RTX 3060;
 
-\- scripts de alignment;
+\- scripts de alignment y preprocessing reproducibles;
 
-\- preprocessing reproducible;
+\- causal alignment documentado para Starcaster y MXR Dyna Comp;
 
-\- causal alignment documentado;
+\- Starcaster 25/50/75/100 CNN entrenadas y evaluadas;
 
-\- Starcaster 25 CNN entrenada y evaluada;
+\- MXR Dyna Comp 25/50/75/100 grabado, alineado, procesado y con CNN entrenadas/evaluadas;
 
-\- Starcaster 50 CNN entrenada y evaluada;
+\- control exitoso GatedConvNet sobre Big Muff;
 
-\- Starcaster 75 CNN entrenada y evaluada;
+\- checkpoints recurrentes Big Muff originales de Wright identificados: LSTM 32, LSTM 64, GRU 32 y GRU 64;
 
-\- Starcaster 100 CNN entrenada y evaluada;
-
-\- control exitoso sobre Big Muff;
-
-\- diagnóstico documentado de problemas de dataset y test distribution.
+\- diagnóstico documentado de cambio de distribución de amplitud del split de test.
 
 
 
 Lo que falta concentra el trabajo en:
 
-\- capturar y procesar compresor;
+\- experimentos de transferencia / fine-tuning CNN;
 
-\- revisar con la asesora la interpretación de la primera ronda CNN Starcaster;
+\- entrenamiento scratch + fine-tuning LSTM;
 
-\- entrenar LSTM/TCN;
+\- TCN;
 
-\- evaluación comparativa final;
+\- evaluación comparativa final de fidelidad y eficiencia;
 
-\- redacción.
+\- tablas, gráficas y redacción.
 
 
 
@@ -3782,4 +3801,251 @@ Este archivo debe actualizarse en cada sesión significativa y utilizarse como b
 
 
 
-**\*\*FIN DEL ESTADO RECONSTRUIDO HASTA 2026-10-13.\*\***
+**# 34. MXR Dyna Comp — adquisición, preprocessing y CNN (2026-10-14 a 2026-10-16)**
+
+
+
+**## 34.1 Adquisición final**
+
+
+
+[DATASET] Se completaron 12 targets raw del MXR Dyna Comp: Sensitivity 25%, 50%, 75% y 100% para train, validation y test.
+
+[METODOLOGÍA] Se reutilizaron los mismos dry del dataset Starcaster; no se duplicaron archivos de entrada raw.
+
+[DECISIÓN] El control físico Output del Dyna Comp se mantuvo en máximo durante la serie comparable.
+
+[DECISIÓN] Todos los targets del compresor recibieron un Clip Gain digital fijo de +6.0 dB en Ableton. No se aplicó normalización independiente entre splits o configuraciones.
+
+[DATASET] Los WAV exportados eran stereo dual-mono. La correlación L/R fue aproximadamente +1.000000 y la diferencia RMS entre canales fue despreciable. Se conservaron únicamente las muestras del canal 0.
+
+[RESULTADO] Los archivos finales raw de trabajo quedaron mono, int16, 44.1 kHz y sin clipping.
+
+
+
+**## 34.2 Coarse alignment**
+
+
+
+[EXPERIMENTO] Se ejecutó `check_alignment.py` sobre los 12 pares con ventana de 20 s y búsqueda de ±5 s.
+
+[RESULTADO] Coarse lags medidos:
+
+
+
+```text
+             TRAIN      VAL      TEST
+25%         -73114      +27      +149
+50%         -73114      +27      +148
+75%         -73114      +27      +148
+100%        -73114      +27      +148
+```
+
+[RESULTADO] La gran consistencia entre configuraciones respalda que el offset dominante proviene de la cadena de reproducción/captura y no de cambios aleatorios del pedal.
+
+
+
+**## 34.3 Fine alignment / criterio causal**
+
+
+
+[IMPLEMENTACIÓN] Se creó `scripts/align_dataset_dynacomp.py` y un `scripts/check_drift_dynacomp.py` específico para el compresor.
+
+[METODOLOGÍA] Se inició con causal delay provisional de 128 samples para todos los pares.
+
+[PROBLEMA] Una búsqueda amplia usando `argmax(abs(correlation))` seleccionó en algunas ventanas picos alternativos de la señal, generando sugerencias artificiales de delays muy grandes (por ejemplo 226–231 samples).
+
+[FIX] Se trató el drift como fine alignment después del coarse alignment ya medido y se restringió la búsqueda alrededor del residual esperado de ~128 samples. Una primera restricción de ±64 samples mostró soluciones pegadas al borde inferior en train; se estrechó a ±48 samples para evitar seleccionar máximos espurios alejados del residual esperado.
+
+[RESULTADO] Delays causales finales, iguales para las cuatro configuraciones:
+
+
+
+```text
+TRAIN = 158 samples
+VAL   = 117 samples
+TEST  = 141 samples
+```
+
+[RESULTADO] La verificación final produjo mediana residual = 128 samples para los 12 pares, y el delay sugerido coincidió con el delay aplicado.
+
+[DECISIÓN] Se congeló el preprocessing del Dyna Comp con estos valores. No se seguirá persiguiendo cada variación de ventana individual.
+
+
+
+**## 34.4 Dataset procesado y sanity check**
+
+
+
+[IMPLEMENTACIÓN] Se creó `scripts/compare_splits_dynacomp.py` para conservar las mismas métricas de sanity check utilizadas con Starcaster.
+
+[RESULTADO] Duraciones procesadas aproximadas:
+
+
+
+```text
+train ≈ 338.335 s
+val   ≈  51.057 s
+test  ≈  59.993 s
+```
+
+[RESULTADO] RMS target por configuración:
+
+
+
+| Sensitivity | Train target RMS | Val target RMS | Test target RMS |
+|---:|---:|---:|---:|
+| 25% | -28.46 dBFS | -28.49 dBFS | -27.29 dBFS |
+| 50% | -28.10 dBFS | -28.08 dBFS | -26.98 dBFS |
+| 75% | -27.80 dBFS | -27.73 dBFS | -26.79 dBFS |
+| 100% | -27.64 dBFS | -27.65 dBFS | -26.69 dBFS |
+
+[RESULTADO] Diferencia RMS target/input:
+
+
+
+| Sensitivity | Train | Val | Test |
+|---:|---:|---:|---:|
+| 25% | -5.33 dB | -4.99 dB | -7.53 dB |
+| 50% | -4.97 dB | -4.59 dB | -7.22 dB |
+| 75% | -4.67 dB | -4.23 dB | -7.04 dB |
+| 100% | -4.51 dB | -4.15 dB | -6.93 dB |
+
+[RESULTADO] El dry de test vuelve a ser sustancialmente más fuerte: aproximadamente -19.75 dBFS frente a -23.13 dBFS en train y -23.50 dBFS en validation.
+
+[INTERPRETACIÓN] En el compresor, la mayor reducción relativa target/input del split de test es compatible con que una entrada más fuerte active una compresión mayor. Esta observación es físicamente plausible, pero no debe presentarse todavía como demostración causal.
+
+[RESULTADO] No se observó clipping; los picos más altos permanecieron por debajo de 0 dBFS.
+
+[DECISIÓN] Los cuatro datasets procesados se consideran válidos para entrenamiento.
+
+
+
+**## 34.5 Primera ronda CNN Dyna Comp**
+
+
+
+[EXPERIMENTO] Se entrenó el mismo GatedConvNet usado con Starcaster para Sensitivity 25/50/75/100, manteniendo la configuración experimental comparable: 9 layers por block, 2 blocks, 8 channels, kernel 3, dilation growth 2, batch size 8, máximo 100 epochs, validation cada epoch y CUDA.
+
+[RESULTADO] Runs generados:
+
+
+
+```text
+mxrdynacomp25_cnn100_causal128_v1-
+mxrdynacomp50_cnn100_causal128_v1-
+mxrdynacomp75_cnn100_causal128_v1-
+mxrdynacomp100_cnn100_causal128_v1-
+```
+
+[RESULTADO] Cada run produjo `model.json`, `model_best.json`, `training_stats.json`, `maxmemusage.txt`, `best_val_out.wav`, `test_out_bestv.wav` y `test_out_final.wav`.
+
+[RESULTADO] Métricas del checkpoint seleccionado por mejor validation:
+
+
+
+| Sensitivity | current_epoch | Best validation loss | Test loss — best | Test ESR — best |
+|---:|---:|---:|---:|---:|
+| 25% | 40 | 1.505935 | 0.788188 | 0.997619 |
+| 50% | 27 | 1.301021 | 0.635206 | 0.854788 |
+| 75% | 27 | 1.408849 | 0.775708 | 1.067203 |
+| 100% | 27 | 1.304705 | 0.672862 | 0.951159 |
+
+[RESULTADO] Entre los cuatro CNN del Dyna Comp, 50% obtuvo el menor best validation loss y también el menor test loss / ESR de los valores registrados.
+
+[DECISIÓN] Como con Starcaster, el checkpoint representativo continúa siendo `model_best`, seleccionado exclusivamente mediante validation.
+
+[GIT] Los resultados de los cuatro entrenamientos y los scripts específicos del Dyna Comp fueron agregados al repositorio principal y se realizó push antes de la siguiente sesión de trabajo.
+
+
+
+**# 35. Transfer learning / fine-tuning — nueva línea experimental solicitada por la asesora**
+
+
+
+[ASESORA] Se propuso comprobar si una red previamente entrenada sobre un pedal como Big Muff Pi puede adaptarse a los pedales del proyecto y aprender mejor o converger más rápido gracias a características ya aprendidas.
+
+[DECISIÓN] Para que la comparación sea válida, la transferencia se realizará únicamente entre modelos de la misma arquitectura.
+
+[IMPLEMENTACIÓN] Para CNN existe un checkpoint propio de control entrenado sobre Big Muff con la misma familia `GatedConvNet`: `results/control_muff_gcn100-/model_best.json`.
+
+[PENDIENTE] Comparar, al menos en el setting 50%, CNN scratch vs CNN inicializada con Big Muff para Starcaster y Dyna Comp.
+
+[IMPLEMENTACIÓN] También se localizaron los checkpoints recurrentes Big Muff distribuidos con el repositorio de Wright:
+
+
+
+```text
+muff-muff1 -> SimpleRNN, LSTM, hidden_size 32, 1 layer
+muff-muff2 -> SimpleRNN, LSTM, hidden_size 64, 1 layer
+muff-muff3 -> SimpleRNN, GRU,  hidden_size 32, 1 layer
+muff-muff4 -> SimpleRNN, GRU,  hidden_size 64, 1 layer
+```
+
+[DECISIÓN] Los dos checkpoints LSTM son candidatos directos para el experimento recurrente previsto en la tesis. No se reemplazará la TCN por GRU; los GRU se conservan como referencia / posible experimento adicional si el tiempo lo permite.
+
+[PENDIENTE] Elegir entre LSTM 32 y LSTM 64 usando la información de los runs originales y entrenar un baseline scratch con exactamente la misma estructura para aislar el efecto de la inicialización.
+
+[PENDIENTE] Ejecutar LSTM scratch vs LSTM fine-tuned sobre Starcaster 50 y Dyna Comp 50 y comparar best validation, test loss, test ESR y convergencia.
+
+
+
+**# 36. Registro cronológico adicional — 2026-10-14 a 2026-10-16**
+
+
+
+**## 2026-10-14 / 2026-10-15 — adquisición MXR Dyna Comp**
+
+[DATASET] Se grabaron 25/50/75/100 para train/val/test.
+
+[METODOLOGÍA] Output físico fijo al máximo y Clip Gain digital fijo +6.0 dB en todos los targets.
+
+[FIX] Se detectó export dual-mono y se reemplazó por versiones mono conservando canal 0.
+
+[RESULTADO] Los 12 WAV quedaron 44.1 kHz, int16, mono y sin clipping.
+
+
+
+**## 2026-10-15 — alineación y preprocessing MXR Dyna Comp**
+
+[RESULTADO] Coarse lag altamente consistente entre configuraciones.
+
+[PROBLEMA] El primer drift check con búsqueda por magnitud seleccionó picos de correlación alternativos.
+
+[FIX] Se restringió la búsqueda alrededor del residual causal esperado.
+
+[RESULTADO] Delays finales train/val/test = 158/117/141 para los cuatro settings.
+
+[RESULTADO] Mediana residual final = 128 samples en los 12 pares.
+
+[DECISIÓN] Dataset procesado congelado.
+
+
+
+**## 2026-10-15 — primera ronda CNN MXR Dyna Comp**
+
+[EXPERIMENTO] Se entrenaron CNN 25/50/75/100 en serie sobre la RTX 3060.
+
+[RESULTADO] Los cuatro runs completaron y generaron best checkpoint y métricas de test.
+
+[RESULTADO] DynaComp50 obtuvo best val 1.301021, test loss best 0.635206 y test ESR best 0.854788.
+
+
+
+**## 2026-10-16 — preparación de transfer learning**
+
+[ASESORA] Se prioriza probar inicialización preentrenada sobre Big Muff.
+
+[IMPLEMENTACIÓN] Se confirmó disponibilidad de un GatedConvNet Big Muff entrenado localmente para transferencia CNN.
+
+[IMPLEMENTACIÓN] Se identificaron dos LSTM y dos GRU Big Muff originales de Wright; las LSTM de 32 y 64 unidades son candidatas para la segunda arquitectura de la tesis.
+
+[PENDIENTE] Ejecutar y documentar los runs scratch vs fine-tuned.
+
+
+
+\---
+
+
+
+**\*\*FIN DEL ESTADO ACTUALIZADO HASTA 2026-10-16.\*\***
