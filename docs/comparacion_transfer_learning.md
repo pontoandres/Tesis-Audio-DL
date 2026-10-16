@@ -55,6 +55,10 @@ En la LSTM32, el efecto sobre validación es todavía mayor: 0.229116 → 0.1777
 
 Estos resultados apoyan la hipótesis de que una representación aprendida sobre un circuito de distorsión puede proporcionar una inicialización útil para otro pedal de distorsión. La evidencia es especialmente clara en **convergencia y validación**, pero no muestra todavía una mejora fuerte y consistente sobre el split de test.
 
+![Curvas de pérdida de validación para Starcaster 50](figures/starcaster50_validation_curves.png)
+
+*Figura 1. Evolución de la pérdida de validación para Starcaster 50. Se comparan CNN y LSTM entrenadas desde cero frente a sus variantes inicializadas mediante transferencia desde Big Muff.*
+
 ### 4.2 Transferencia entre efectos distintos: Big Muff → Dyna Comp
 
 El comportamiento es considerablemente menos favorable.
@@ -67,7 +71,27 @@ Las curvas de validación añaden una observación importante: en Dyna Comp, tre
 
 Esto es compatible con la hipótesis experimental de que transferir desde un modelo de **distorsión** hacia un **compresor** es menos directo: el compresor introduce un comportamiento dinámico dependiente de la envolvente temporal que no coincide necesariamente con las representaciones aprendidas para una no linealidad de distorsión.
 
-## 5. Lectura general
+![Curvas de pérdida de validación para Dyna Comp 50](figures/dynacomp50_validation_curves.png)
+
+*Figura 2. Evolución de la pérdida de validación para Dyna Comp 50. Tres de los cuatro experimentos alcanzan su mejor validación en el primer epoch, lo que motiva revisar sobreajuste temprano y posibles diferencias de distribución entre train y validation.*
+
+## 5. Resumen gráfico de métricas
+
+Las siguientes figuras resumen las métricas obtenidas en el checkpoint seleccionado por mejor validación. Deben interpretarse junto con la tabla principal, ya que las diferencias de escala entre Starcaster y Dyna Comp pueden comprimir visualmente algunas comparaciones.
+
+![Mejor pérdida de validación de todos los experimentos](figures/summary_best_val.png)
+
+*Figura 3. Mejor pérdida de validación alcanzada por cada experimento.*
+
+![Test loss de todos los experimentos](figures/summary_test_loss.png)
+
+*Figura 4. Test loss evaluado con el checkpoint seleccionado por mejor validación.*
+
+![Test ESR de todos los experimentos](figures/summary_test_esr.png)
+
+*Figura 5. Test ESR evaluado con el checkpoint seleccionado por mejor validación.*
+
+## 6. Lectura general
 
 Los resultados actuales sugieren:
 
@@ -77,7 +101,7 @@ Los resultados actuales sugieren:
 4. El checkpoint utilizado para test se mantiene definido por **mejor validación**, evitando seleccionar modelos con información del test.
 5. El split de test del dataset propio ya presenta una diferencia de distribución de amplitud respecto a train/validation; por ello la brecha entre mejoras de validation y mejoras de test debe analizarse con cautela.
 
-## 6. Comparación CNN vs. LSTM a 50%
+## 7. Comparación CNN vs. LSTM a 50%
 
 Esta comparación es secundaria respecto al experimento de transferencia, pero deja algunas observaciones útiles:
 
@@ -86,7 +110,7 @@ Esta comparación es secundaria respecto al experimento de transferencia, pero d
 - En **Dyna Comp 50**, la CNN scratch obtiene mejor ESR de test (0.854788) que la LSTM scratch (0.903959).
 - La comparación arquitectónica final debe incorporar también **TCN**, número de parámetros, tamaño del modelo, tiempo de inferencia y factor de tiempo real antes de concluir cuál arquitectura ofrece el mejor compromiso fidelidad/eficiencia.
 
-## 7. Fuentes de las métricas
+## 8. Fuentes de las métricas
 
 Resultados utilizados directamente desde el repositorio:
 
@@ -102,7 +126,7 @@ Resultados utilizados directamente desde el repositorio:
 
 **Nota Starcaster CNN scratch:** el entrenamiento final sufrió previamente un OOM durante la evaluación integrada; por esa razón las métricas de test del checkpoint de mejor validación se toman del archivo de evaluación independiente `test_metrics.json`.
 
-## 8. Siguientes pasos
+## 9. Siguientes pasos
 
 - Incorporar al documento las gráficas de validation loss scratch vs. fine-tuning ya generadas para Starcaster y Dyna Comp.
 - Incorporar la TCN con el mismo protocolo experimental.
