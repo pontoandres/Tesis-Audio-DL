@@ -402,9 +402,11 @@ y luego un script independiente puede generar automáticamente tablas y figuras.
 3. congelar configuraciones de MR-STFT, LUFS y benchmark.
 
 ### Fase B — implementar evaluación
-4. crear `scripts/evaluate_model_outputs.py`;
+4. ✅ crear `scripts/evaluate_model_outputs.py`;
 5. ejecutar primero sobre los modelos ya existentes;
 6. verificar manualmente varios resultados.
+
+**Estado 2026-10-20:** el evaluador común ya fue implementado. Calcula ESR, MAE, MSE, RMSE, MR-STFT y error de loudness (LUFS, mediante `pyloudnorm` cuando está instalado), sin normalizar amplitudes ni remuestrear señales. La siguiente verificación consiste en ejecutarlo sobre outputs existentes y comprobar que el ESR reproducido coincida, dentro de tolerancia numérica, con los valores ya registrados por CoreAudioML.
 
 ### Fase C — completar arquitecturas
 7. entrenar los seis LSTM scratch faltantes;
