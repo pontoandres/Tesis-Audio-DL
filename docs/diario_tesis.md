@@ -12,7 +12,7 @@
 
 **\*\*Repositorio principal:\*\*** \`https\://github.com/pontoandres/Tesis-Audio-DL.git\`  
 
-**\*\*Última actualización de este log:\*\*** 2026-10-16  
+**\*\*Última actualización de este log:\*\*** 2026-10-20  
 
 **\*\*Estado del documento:\*\*** vivo / acumulativo. No borrar entradas históricas; corregirlas mediante notas posteriores cuando haga falta.
 
@@ -997,7 +997,6 @@ Nota posterior para MXR Dyna Comp:
 \- el signo de la correlación local no fue estable entre todos los splits / ventanas;
 
 \- por ello, para localizar el pico temporal del compresor se utilizó la magnitud de la correlación dentro de una ventana de búsqueda restringida alrededor del desfase residual esperado, sin invertir artificialmente las señales.
-
 
 
 **## 7.4 Error metodológico inicial corregido**
@@ -1995,7 +1994,6 @@ La entrada y salida son señales waveform mono en dominio temporal:
 \- no se usan tokens;
 
 \- la red predice muestras continuas de amplitud.
-
 
 
 Estimaciones preliminares anotadas:
@@ -2999,7 +2997,6 @@ Para una reunión de avance, el relato técnico consolidado es:
 \---
 
 
-
 **# 24. Material directamente reutilizable para metodología**
 
 
@@ -3997,7 +3994,6 @@ muff-muff4 -> SimpleRNN, GRU,  hidden_size 64, 1 layer
 **## 2026-10-14 / 2026-10-15 — adquisición MXR Dyna Comp**
 
 [DATASET] Se grabaron 25/50/75/100 para train/val/test.
-
 [METODOLOGÍA] Output físico fijo al máximo y Clip Gain digital fijo +6.0 dB en todos los targets.
 
 [FIX] Se detectó export dual-mono y se reemplazó por versiones mono conservando canal 0.
@@ -4049,3 +4045,308 @@ muff-muff4 -> SimpleRNN, GRU,  hidden_size 64, 1 layer
 
 
 **\*\*FIN DEL ESTADO ACTUALIZADO HASTA 2026-10-16.\*\***
+
+
+---
+
+# 37. Cierre del experimento de transferencia y segunda arquitectura — 2026-10-16
+
+## 37.1 Fine-tuning CNN a partir de Big Muff
+
+[ASESORA] Se ejecutó la comparación solicitada entre entrenamiento desde cero (scratch) e inicialización con pesos previamente aprendidos sobre Big Muff, manteniendo la misma arquitectura dentro de cada comparación.
+
+[EXPERIMENTO] Runs CNN de transferencia completados:
+
+- `starcaster50_cnn_ft_bigMuff_v1-`;
+- `mxrdynacomp50_cnn_ft_bigMuff_v1-`.
+
+[RESULTADO] Comparación CNN, checkpoint seleccionado por mejor validation:
+
+| Efecto | Inicialización | Best epoch | Best val | Test loss | Test ESR |
+|---|---|---:|---:|---:|---:|
+| Starcaster 50 | Scratch | 61 | 0.261490 | 0.931544 | 1.008393 |
+| Starcaster 50 | Big Muff FT | 33 | 0.214686 | 0.937416 | 1.007249 |
+| Dyna Comp 50 | Scratch | 1 | 1.301021 | 0.635206 | 0.854788 |
+| Dyna Comp 50 | Big Muff FT | 20 | 1.372579 | 0.725555 | 0.873600 |
+
+[INTERPRETACIÓN] Para Starcaster la transferencia reduce best validation aproximadamente 17.9% y mueve el mejor checkpoint de epoch 61 a 33, mientras el ESR de test cambia muy poco. Para Dyna Comp la transferencia CNN no muestra ventaja consistente y empeora las métricas principales frente a scratch.
+
+## 37.2 LSTM32 scratch y fine-tuning
+
+[DECISIÓN] Se seleccionó como segunda arquitectura recurrente una `SimpleRNN` con unidad LSTM y `hidden_size=32`, compatible con el checkpoint Wright `muff-muff1`.
+
+[EXPERIMENTO] Runs completados a 50%:
+
+- `starcaster50_lstm32_scratch_v1-`;
+- `mxrdynacomp50_lstm32_scratch_v1-`;
+- `starcaster50_lstm32_ft_wrightMuff1_v1-`;
+- `mxrdynacomp50_lstm32_ft_wrightMuff1_v1-`.
+
+[RESULTADO] Comparación LSTM32:
+
+| Efecto | Inicialización | Epoch final | Best epoch | Best val | Test loss | Test ESR |
+|---|---|---:|---:|---:|---:|---:|
+| Starcaster 50 | Scratch | 100 | 96 | 0.229116 | 0.884839 | 1.035320 |
+| Starcaster 50 | Wright Big Muff FT | 53 | 27 | 0.177793 | 0.933073 | 1.027552 |
+| Dyna Comp 50 | Scratch | 27 | 1 | 0.766429 | 0.859836 | 0.903959 |
+| Dyna Comp 50 | Wright Big Muff FT | 27 | 1 | 1.269356 | 0.717394 | 1.052577 |
+
+[INTERPRETACIÓN] En Starcaster, Big Muff -> Starcaster vuelve a mostrar una mejora clara en validation y convergencia más temprana, aunque el test no mejora consistentemente en todas las métricas. En Dyna Comp la transferencia desde un pedal de distorsión produce resultados mixtos o desfavorables.
+
+[DECISIÓN] El experimento de transferencia queda como análisis complementario a 50%. No se extenderá de inmediato a 25/75/100; la prioridad es completar la matriz principal CNN/LSTM/TCN scratch.
+
+## 37.3 Problema cuDNN durante LSTM
+
+[PROBLEMA] Los primeros intentos recurrentes produjeron:
+
+`RuntimeError: cuDNN error: CUDNN_STATUS_NOT_SUPPORTED`
+
+[FIX] En `CoreAudioML/networks.py`, `SimpleRNN.forward` se modificó para asegurar tensores contiguos mediante `.contiguous()` tanto para entrada como para hidden state.
+
+[RESULTADO] El cambio de contigüidad por sí solo no resolvió los fallos con chunks grandes.
+
+[FIX] Se redujeron `val_chunk` y `test_chunk` a 20000 muestras.
+
+[METODOLOGÍA] Los runs recurrentes exitosos se obtuvieron con la combinación del fix de contigüidad + chunks de 20000. No se realizó un experimento ablation que permita atribuir el éxito exclusivamente a una de las dos modificaciones; por tanto, no debe afirmarse que la contigüidad fuera irrelevante.
+
+[GIT] El fix de CoreAudioML se conservó en el fork propio, rama `thesis-cudnn-fix`, y el submódulo Wright se actualizó para apuntar a dicha versión.
+
+---
+
+# 38. Comparación gráfica scratch vs. fine-tuning — 2026-10-16
+
+[IMPLEMENTACIÓN] Se creó `scripts/plot_transfer_learning_results.py`.
+
+[FIX] Starcaster50 CNN scratch no contenía las métricas de test integradas en `training_stats.json` debido al OOM histórico. El script se ajustó para usar `test_metrics.json` como fallback cuando faltan `test_loss_best` o `test_lossESR_best`.
+
+[RESULTADO] Se generaron:
+
+- `docs/figures/starcaster50_validation_curves.png`;
+- `docs/figures/dynacomp50_validation_curves.png`;
+- `docs/figures/summary_best_val.png`;
+- `docs/figures/summary_test_loss.png`;
+- `docs/figures/summary_test_esr.png`.
+
+[DOCUMENTO] Se creó y luego enriqueció `docs/comparacion_transfer_learning.md` con tablas, cambios porcentuales, interpretación y las cinco figuras.
+
+[OBSERVACIÓN] Las curvas de Dyna Comp muestran que tres de los cuatro experimentos a 50% alcanzan su mejor validation en el primer epoch. En particular, la LSTM scratch obtiene best validation 0.766429 en epoch 1 y luego validation empeora mientras el entrenamiento continúa.
+
+[INTERPRETACIÓN] Este patrón es compatible con sobreajuste muy temprano o con una diferencia de distribución train/validation. Debe investigarse antes de atribuirlo únicamente a la arquitectura o al efecto físico.
+
+---
+
+# 39. Definición del protocolo final de métricas — 2026-10-20
+
+[ASESORA] Para la siguiente revisión se solicitó llevar claramente explicadas las métricas que se utilizarán para medir desempeño de las redes y revisar métricas adicionales disponibles en la literatura.
+
+[DOCUMENTO] Se creó `docs/metricas_evaluacion.md` como propuesta de protocolo.
+
+[DECISIÓN] El conjunto principal propuesto para fidelidad es:
+
+- ESR como métrica temporal normalizada;
+- MAE como métrica temporal complementaria;
+- MR-STFT para diferencias espectrales en varias resoluciones;
+- error de loudness en LUFS, especialmente relevante para compresión.
+
+[DECISIÓN] MSE y RMSE pueden conservarse como métricas secundarias de bajo costo. MFCC cosine distance, modulation-spectrum MSE y error de envolvente quedan como candidatas adicionales para discutir con la asesora.
+
+[DECISIÓN] El conjunto propuesto de eficiencia computacional incluye:
+
+- número de parámetros;
+- tamaño del modelo;
+- tiempo de inferencia;
+- Real-Time Factor (RTF);
+- memoria pico durante inferencia;
+- FLOPs/MACs únicamente si pueden medirse de forma comparable para las tres arquitecturas.
+
+[METODOLOGÍA] La función de pérdida interna de entrenamiento no se utilizará como única base de comparación entre arquitecturas. CNN, LSTM y TCN serán evaluadas posteriormente con un evaluador externo común sobre los mismos WAV de test.
+
+[DOCUMENTO] El `best_val` de los modelos Wright se documentó correctamente como la pérdida compuesta usada para selección de checkpoint:
+
+`0.75 * ESRPre + 0.25 * DC`
+
+donde ESRPre aplica el filtro de preénfasis/high-pass antes del ESR. El test ESR reportado por separado corresponde al ESR sin preénfasis.
+
+---
+
+# 40. Evaluador común y registro automático de experimentos — 2026-10-20
+
+## 40.1 Evaluador común
+
+[IMPLEMENTACIÓN] Se creó `scripts/evaluate_model_outputs.py` para evaluar cualquier par target/prediction independientemente de la arquitectura que generó la predicción.
+
+[METODOLOGÍA] El evaluador:
+
+- no normaliza amplitudes;
+- no remuestrea;
+- rechaza stereo en lugar de hacer downmix silencioso;
+- exige por defecto igual longitud entre target y prediction;
+- calcula ESR, MAE, MSE, RMSE, MR-STFT y loudness/LUFS.
+
+[DECISIÓN] Configuración MR-STFT provisional usada en el evaluador:
+
+- FFT sizes: 512, 2048, 8192;
+- hop sizes: 128, 512, 2048;
+- ventana Hann;
+- combinación: promedio sobre resoluciones de spectral convergence + error L1 de log-magnitude.
+
+Esta configuración debe revisarse/congelarse con la asesora antes de presentar resultados definitivos.
+
+## 40.2 Validación independiente del ESR
+
+[EXPERIMENTO] Starcaster50 CNN scratch se reevaluó con el evaluador externo.
+
+[RESULTADO]
+
+- ESR nuevo = 1.008393348;
+- ESR histórico CoreAudioML = 1.008393407;
+- diferencia ≈ 5.9e-8.
+
+[EXPERIMENTO] DynaComp50 CNN scratch se reevaluó de la misma forma.
+
+[RESULTADO]
+
+- ESR nuevo = 0.854787530;
+- ESR histórico CoreAudioML = 0.854787588;
+- diferencia ≈ 5.8e-8.
+
+[INTERPRETACIÓN] Las diferencias son consistentes con precisión numérica. Esto valida que el nuevo evaluador reproduce correctamente el ESR previamente calculado por CoreAudioML.
+
+## 40.3 Pipeline batch
+
+[IMPLEMENTACIÓN] Se creó `configs/evaluation_manifest.json` como lista explícita de runs canónicos. Se evita así mezclar automáticamente runs viejos, debug o preliminares presentes en `results/`.
+
+[IMPLEMENTACIÓN] Se creó `scripts/evaluate_all_existing_models.py`.
+
+[RESULTADO] El primer batch evaluó **14/14 experimentos, con 0 missing/error**, y todos los ESR que contaban con valor histórico pasaron la validación con tolerancia 1e-5.
+
+[RESULTADO] Archivos generados:
+
+- JSON estandarizado por experimento en `results/evaluation/`;
+- `results/evaluation/experiment_registry.csv`;
+- `docs/experiment_registry.md`.
+
+[RESULTADO] Registro común de fidelidad:
+
+| Run | ESR | MAE | MR-STFT | LUFS error (dB) |
+|---|---:|---:|---:|---:|
+| Starcaster25 CNN scratch | 0.662231 | 0.030073 | 1.760229 | 0.343 |
+| Starcaster50 CNN scratch | 1.008393 | 0.043079 | 1.597457 | 0.370 |
+| Starcaster75 CNN scratch | 1.096581 | 0.051456 | 2.279925 | 0.670 |
+| Starcaster100 CNN scratch | 1.138131 | 0.052067 | 2.049116 | 0.180 |
+| DynaComp25 CNN scratch | 0.997619 | 0.027591 | 1.529316 | 0.184 |
+| DynaComp50 CNN scratch | 0.854788 | 0.027545 | 2.424215 | 1.592 |
+| DynaComp75 CNN scratch | 1.067203 | 0.031741 | 2.353690 | 0.262 |
+| DynaComp100 CNN scratch | 0.951159 | 0.030684 | 2.900078 | 0.860 |
+| Starcaster50 LSTM32 scratch | 1.035320 | 0.044916 | 2.841576 | 0.686 |
+| DynaComp50 LSTM32 scratch | 0.903959 | 0.029044 | 1.902550 | 4.038 |
+| Starcaster50 CNN Big Muff FT | 1.007249 | 0.043320 | 1.506502 | 0.231 |
+| DynaComp50 CNN Big Muff FT | 0.873600 | 0.026154 | 1.774154 | 0.933 |
+| Starcaster50 LSTM32 Wright Muff1 FT | 1.027552 | 0.044389 | 2.157311 | 0.490 |
+| DynaComp50 LSTM32 Wright Muff1 FT | 1.052577 | 0.033609 | 2.410811 | 1.733 |
+
+[OBSERVACIÓN] Las métricas pueden ordenar modelos de forma distinta. Por ejemplo, DynaComp50 CNN scratch tiene ESR menor que Starcaster50 CNN scratch, pero MR-STFT y error LUFS mayores. Esto refuerza la decisión de evaluar fidelidad con múltiples métricas y no con un único escalar.
+
+[DECISIÓN] A partir de esta sesión se evita copiar manualmente métricas a tablas finales cuando puedan generarse desde el registry.
+
+---
+
+# 41. Plan experimental actualizado — 2026-10-20
+
+[DOCUMENTO] Se creó `docs/plan_ejecucion.md`.
+
+[DECISIÓN] La secuencia principal queda reorganizada en siete pasos reales:
+
+1. cerrar protocolo de métricas con la asesora;
+2. consolidar pipeline común de evaluación;
+3. completar LSTM scratch;
+4. seleccionar y congelar la TCN con pilotos a 50%;
+5. completar TCN scratch;
+6. ejecutar benchmark de eficiencia;
+7. generar tablas, gráficas y análisis comparativo final.
+
+[RESULTADO] El paso 2 quedó funcional: evaluador individual + manifest + batch + registry.
+
+[DECISIÓN] El fine-tuning deja de considerarse un paso secuencial de la matriz principal y queda como estudio complementario ya realizado a 50%.
+
+[ESTADO] Antes de lanzar los nuevos entrenamientos existían **10/24 modelos scratch** de la matriz principal:
+
+- 8 CNN;
+- 2 LSTM a 50%;
+- 0 TCN.
+
+[PENDIENTE] Para completar la matriz faltan 6 LSTM scratch y 8 TCN scratch = 14 core runs.
+
+---
+
+# 42. Inicio de los seis LSTM scratch faltantes — 2026-10-20
+
+[EXPERIMENTO] Se inició en la laptop RTX 3060 el entrenamiento secuencial de los seis LSTM32 scratch faltantes:
+
+- `starcaster25_lstm32_scratch_v1-`;
+- `starcaster75_lstm32_scratch_v1-`;
+- `starcaster100_lstm32_scratch_v1-`;
+- `mxrdynacomp25_lstm32_scratch_v1-`;
+- `mxrdynacomp75_lstm32_scratch_v1-`;
+- `mxrdynacomp100_lstm32_scratch_v1-`.
+
+[CONFIGURACIÓN] Se mantiene la estructura usada en los baselines 50%:
+
+- modelo: `SimpleRNN`;
+- unidad recurrente: LSTM;
+- hidden size: 32;
+- entrenamiento desde cero / scratch;
+- máximo 100 epochs;
+- validation cada epoch;
+- batch size 50;
+- `val_chunk=20000`;
+- `test_chunk=20000`;
+- CUDA habilitado.
+
+[METODOLOGÍA] Los seis runs usan los mismos datasets procesados/alineados empleados por las CNN para cada setting. Se mantiene selección de checkpoint exclusivamente por mejor validation.
+
+[ESTADO] **Entrenamientos en curso al momento de esta actualización.** No se registran todavía métricas ni se asume que los seis runs hayan terminado correctamente.
+
+[SIGUIENTE PASO] Cuando finalicen:
+
+1. revisar salida de terminal y `training_stats.json`;
+2. añadir los seis runs al manifest canónico;
+3. ejecutar `scripts/evaluate_all_existing_models.py`;
+4. regenerar registry;
+5. verificar ESR y nuevas métricas;
+6. la matriz principal debería avanzar de 10/24 a 16/24 si los seis runs completan correctamente;
+7. pasar a selección/pilotos de la TCN.
+
+---
+
+# 43. Resumen ejecutivo actualizado — 2026-10-20
+
+El proyecto cuenta actualmente con:
+
+- dataset procesado y alineado para Starcaster y Dyna Comp en 25/50/75/100;
+- ocho CNN scratch entrenadas;
+- dos LSTM32 scratch a 50% entrenadas;
+- cuatro runs de transferencia a 50% completados (CNN y LSTM, Starcaster y Dyna Comp);
+- comparación scratch vs. fine-tuning documentada y graficada;
+- fix recurrente/cuDNN documentado;
+- protocolo de métricas propuesto para revisión con la asesora;
+- evaluador externo común implementado;
+- ESR externo validado contra CoreAudioML;
+- batch evaluator y manifest canónico implementados;
+- 14 experimentos existentes reevaluados automáticamente con ESR, MAE, MSE, RMSE, MR-STFT y LUFS;
+- registry CSV y Markdown generados;
+- plan de ejecución reorganizado;
+- seis LSTM scratch adicionales actualmente en entrenamiento.
+
+Prioridades inmediatas:
+
+1. dejar terminar y validar los seis LSTM;
+2. presentar/revisar el protocolo de métricas con la asesora;
+3. seleccionar y congelar TCN;
+4. entrenar ocho TCN scratch;
+5. implementar benchmark de eficiencia;
+6. producir comparaciones finales fidelidad/costo.
+
+---
+
+**FIN DEL ESTADO ACTUALIZADO HASTA 2026-10-20.**
