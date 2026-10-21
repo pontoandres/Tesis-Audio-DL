@@ -123,6 +123,78 @@
       "role": "core"
     },
     {
+      "id": "starcaster25_lstm32_scratch",
+      "effect": "starcaster",
+      "setting": 25,
+      "architecture": "LSTM32",
+      "training_mode": "scratch",
+      "run_dir": "results/starcaster25_lstm32_scratch_v1-",
+      "target": "data/processed/starcaster/25/test/starcaster25-target.wav",
+      "prediction": "test_out_bestv.wav",
+      "checkpoint": "model_best.json",
+      "role": "core"
+    },
+    {
+      "id": "starcaster75_lstm32_scratch",
+      "effect": "starcaster",
+      "setting": 75,
+      "architecture": "LSTM32",
+      "training_mode": "scratch",
+      "run_dir": "results/starcaster75_lstm32_scratch_v1-",
+      "target": "data/processed/starcaster/75/test/starcaster75-target.wav",
+      "prediction": "test_out_bestv.wav",
+      "checkpoint": "model_best.json",
+      "role": "core"
+    },
+    {
+      "id": "starcaster100_lstm32_scratch",
+      "effect": "starcaster",
+      "setting": 100,
+      "architecture": "LSTM32",
+      "training_mode": "scratch",
+      "run_dir": "results/starcaster100_lstm32_scratch_v1-",
+      "target": "data/processed/starcaster/100/test/starcaster100-target.wav",
+      "prediction": "test_out_bestv.wav",
+      "checkpoint": "model_best.json",
+      "role": "core"
+    },
+    {
+      "id": "dynacomp25_lstm32_scratch",
+      "effect": "dynacomp",
+      "setting": 25,
+      "architecture": "LSTM32",
+      "training_mode": "scratch",
+      "run_dir": "results/mxrdynacomp25_lstm32_scratch_v1-",
+      "target": "data/processed/mxrdynacomp/25/test/mxrdynacomp25-target.wav",
+      "prediction": "test_out_bestv.wav",
+      "checkpoint": "model_best.json",
+      "role": "core"
+    },
+    {
+      "id": "dynacomp75_lstm32_scratch",
+      "effect": "dynacomp",
+      "setting": 75,
+      "architecture": "LSTM32",
+      "training_mode": "scratch",
+      "run_dir": "results/mxrdynacomp75_lstm32_scratch_v1-",
+      "target": "data/processed/mxrdynacomp/75/test/mxrdynacomp75-target.wav",
+      "prediction": "test_out_bestv.wav",
+      "checkpoint": "model_best.json",
+      "role": "core"
+    },
+    {
+      "id": "dynacomp100_lstm32_scratch",
+      "effect": "dynacomp",
+      "setting": 100,
+      "architecture": "LSTM32",
+      "training_mode": "scratch",
+      "run_dir": "results/mxrdynacomp100_lstm32_scratch_v1-",
+      "target": "data/processed/mxrdynacomp/100/test/mxrdynacomp100-target.wav",
+      "prediction": "test_out_bestv.wav",
+      "checkpoint": "model_best.json",
+      "role": "core"
+    },
+    {
       "id": "starcaster50_cnn_ft_bigmuff",
       "effect": "starcaster",
       "setting": 50,
