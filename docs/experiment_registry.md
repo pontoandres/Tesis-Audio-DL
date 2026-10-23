@@ -18,6 +18,12 @@ All fidelity metrics are recalculated with the common external evaluator rather 
 | dynacomp | 100 | CNN | scratch | 0.951159 | 0.030684 | 2.900078 | 0.860 | 1.304705 | 1 |
 | starcaster | 50 | LSTM32 | scratch | 1.035320 | 0.044916 | 2.841576 | 0.686 | 0.229116 | 96 |
 | dynacomp | 50 | LSTM32 | scratch | 0.903959 | 0.029044 | 1.902550 | 4.038 | 0.766429 | 1 |
+| starcaster | 25 | LSTM32 | scratch | 0.673416 | 0.031690 | 3.082182 | 0.905 | 0.276427 | 30 |
+| starcaster | 75 | LSTM32 | scratch | 1.179052 | 0.054895 | 4.051253 | 1.349 | 0.393949 | 34 |
+| starcaster | 100 | LSTM32 | scratch | 1.140583 | 0.053191 | 3.033465 | 0.469 | 0.302803 | 46 |
+| dynacomp | 25 | LSTM32 | scratch | 1.127779 | 0.031221 | 1.818048 | 6.724 | 0.728949 | 2 |
+| dynacomp | 75 | LSTM32 | scratch | 0.959539 | 0.031079 | 2.027137 | 5.373 | 0.737788 | 1 |
+| dynacomp | 100 | LSTM32 | scratch | 0.864724 | 0.029537 | 2.091518 | 4.727 | 0.742691 | 1 |
 
 ## Complementary transfer-learning experiments
 
@@ -32,7 +38,7 @@ All fidelity metrics are recalculated with the common external evaluator rather 
 
 When an older CoreAudioML ESR is available, the pipeline compares it against the independently recomputed ESR with tolerance 1e-5.
 
-Validated against previous ESR values: **14/14** within tolerance.
+Validated against previous ESR values: **20/20** within tolerance.
 
 ## Notes
 

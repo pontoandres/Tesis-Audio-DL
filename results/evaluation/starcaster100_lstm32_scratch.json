@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "status": "ok",
+  "id": "starcaster100_lstm32_scratch",
+  "effect": "starcaster",
+  "setting": 100,
+  "architecture": "LSTM32",
+  "training_mode": "scratch",
+  "pretraining_source": null,
+  "role": "core",
+  "run_dir": "results/starcaster100_lstm32_scratch_v1-",
+  "target": "data/processed/starcaster/100/test/starcaster100-target.wav",
+  "prediction": "results/starcaster100_lstm32_scratch_v1-/test_out_bestv.wav",
+  "checkpoint": "results/starcaster100_lstm32_scratch_v1-/model_best.json",
+  "checkpoint_size_bytes": 97121,
+  "audio": {
+    "sample_rate_hz": 44100,
+    "evaluated_samples": 2535165,
+    "audio_seconds": 57.48673469387755,
+    "target_original_samples": 2535165,
+    "prediction_original_samples": 2535165,
+    "target_dtype": "int16",
+    "prediction_dtype": "float32",
+    "length_policy": "strict",
+    "amplitude_normalization": false,
+    "resampling": false
+  },
+  "training": {
+    "final_epoch": 72,
+    "best_epoch": 46,
+    "best_val": 0.30280259251594543
+  },
+  "metrics": {
+    "esr": 1.1405830567088933,
+    "mae": 0.05319134103749859,
+    "mse": 0.006440006911000697,
+    "rmse": 0.08024965365034728,
+    "target_mean_square": 0.00563624108092845,
+    "mrstft": 3.0334647496541343,
+    "mrstft_spectral_convergence": 0.3682488799095154,
+    "mrstft_log_magnitude_l1": 2.665215810139974,
+    "mrstft_resolutions": [
+      {
+        "n_fft": 512,
+        "hop_length": 128,
+        "spectral_convergence": 0.3770717978477478,
+        "log_magnitude_l1": 2.8701696395874023,
+        "combined": 3.247241497039795
+      },
+      {
+        "n_fft": 2048,
+        "hop_length": 512,
+        "spectral_convergence": 0.36392274498939514,
+        "log_magnitude_l1": 2.6922800540924072,
+        "combined": 3.0562028884887695
+      },
+      {
+        "n_fft": 8192,
+        "hop_length": 2048,
+        "spectral_convergence": 0.3637520968914032,
+        "log_magnitude_l1": 2.4331977367401123,
+        "combined": 2.796949863433838
+      }
+    ],
+    "loudness": {
+      "available": true,
+      "standard": "ITU-R BS.1770 (via pyloudnorm)",
+      "target_lufs": -23.011011723271334,
+      "prediction_lufs": -23.479674035075906,
+      "lufs_absolute_error": 0.46866231180457163
+    }
+  },
+  "validation": {
+    "reference_esr": 1.1405831575393677,
+    "reference_esr_source": "training_stats.json:test_lossESR_best",
+    "esr_abs_diff": 1.0083047441433735e-07,
+    "esr_matches_reference": true,
+    "tolerance": 1e-05
+  },
+  "metric_configuration": {
+    "mrstft_fft_sizes": [
+      512,
+      2048,
+      8192
+    ],
+    "mrstft_hop_sizes": [
+      128,
+      512,
+      2048
+    ],
+    "mrstft_window": "Hann",
+    "mrstft_center": true,
+    "mrstft_combination": "mean_over_resolutions(spectral_convergence + log_magnitude_L1)"
+  }
+}
