@@ -30,15 +30,15 @@ Estas métricas se proponen como el conjunto principal que debe aparecer en las 
 
 Métrica temporal normalizada por la energía de la señal objetivo:
 
-[
+$
 ESR = \frac{\sum_n (y[n]-\hat{y}[n])^2}
 {\sum_n y[n]^2 + \epsilon}
-]
+$
 
 donde:
 
-- (y[n]) es la señal real producida por el pedal;
-- (hat{y}[n]) es la señal estimada por la red.
+- $y[n]$ es la señal real producida por el pedal;
+- $\hat{y}[n]$ es la señal estimada por la red.
 
 **Interpretación:** menor es mejor.  
 **Ventaja:** permite comparar error respecto a la energía de cada señal y es una métrica ampliamente utilizada en modelado neuronal de amplificadores y distorsión.
@@ -49,9 +49,9 @@ Se recomienda reportar **ESR sin preénfasis como métrica común de test** para
 
 ### B. Mean Absolute Error (MAE)
 
-[
+$
 MAE = \frac{1}{N}\sum_n |y[n]-\hat{y}[n]|
-]
+$
 
 **Interpretación:** menor es mejor.  
 **Ventaja:** es sencilla, interpretable y menos sensible a errores puntuales grandes que MSE.
@@ -86,9 +86,9 @@ La configuración definitiva debe congelarse antes de generar las tablas finales
 
 ### D. Error de loudness (LUFS error)
 
-[
-E_{LUFS}=|LUFS(y)-LUFS(\hat{y})|
-]
+$
+E_{LUFS}=\left|LUFS(y)-LUFS(\hat{y})\right|
+$
 
 utilizando una implementación basada en ITU-R BS.1770.
 
@@ -152,9 +152,9 @@ Estas métricas responden directamente al objetivo de caracterizar el desempeño
 
 ### 4.1 Número de parámetros entrenables
 
-[
-P = \sum_i \text{numel}(\theta_i)
-]
+$
+P = \sum_i \operatorname{numel}(\theta_i)
+$
 
 Reportar:
 
@@ -196,9 +196,9 @@ Se recomienda utilizar un fragmento fijo de **60 s** de audio de test.
 
 ### 4.4 Real-Time Factor (RTF)
 
-[
-RTF = \frac{T_{procesamiento}}{T_{audio}}
-]
+$
+RTF = \frac{T_{\mathrm{procesamiento}}}{T_{\mathrm{audio}}}
+$
 
 Interpretación:
 
@@ -208,9 +208,9 @@ Interpretación:
 
 También puede reportarse:
 
-[
+$
 xRT = \frac{1}{RTF}
-]
+$
 
 para expresar cuántas veces más rápido que tiempo real procesa el modelo.
 
@@ -283,19 +283,20 @@ El experimento principal debe quedar balanceado:
 
 | Efecto | Setting | CNN | LSTM | TCN |
 |---|---:|---:|---:|---:|
-| Starcaster | 25 | ✓ | pendiente | pendiente |
+| Starcaster | 25 | ✓ | ✓ | pendiente |
 | Starcaster | 50 | ✓ | ✓ | pendiente |
-| Starcaster | 75 | ✓ | pendiente | pendiente |
-| Starcaster | 100 | ✓ | pendiente | pendiente |
-| Dyna Comp | 25 | ✓ | pendiente | pendiente |
+| Starcaster | 75 | ✓ | ✓ | pendiente |
+| Starcaster | 100 | ✓ | ✓ | pendiente |
+| Dyna Comp | 25 | ✓ | ✓ | pendiente |
 | Dyna Comp | 50 | ✓ | ✓ | pendiente |
-| Dyna Comp | 75 | ✓ | pendiente | pendiente |
-| Dyna Comp | 100 | ✓ | pendiente | pendiente |
+| Dyna Comp | 75 | ✓ | ✓ | pendiente |
+| Dyna Comp | 100 | ✓ | ✓ | pendiente |
 
 Por tanto, para completar la comparación principal faltan:
 
-- **6 entrenamientos LSTM scratch**;
 - **8 entrenamientos TCN scratch**.
+
+Las matrices **CNN scratch (8/8)** y **LSTM scratch (8/8)** ya están completas.
 
 Los experimentos de **fine-tuning a 50 %** deben mantenerse como análisis adicional de transferencia de aprendizaje, no como sustitutos de la matriz principal.
 
@@ -406,10 +407,10 @@ y luego un script independiente puede generar automáticamente tablas y figuras.
 5. ejecutar primero sobre los modelos ya existentes;
 6. verificar manualmente varios resultados.
 
-**Estado 2026-10-20:** el evaluador común ya fue implementado. Calcula ESR, MAE, MSE, RMSE, MR-STFT y error de loudness (LUFS, mediante `pyloudnorm` cuando está instalado), sin normalizar amplitudes ni remuestrear señales. La siguiente verificación consiste en ejecutarlo sobre outputs existentes y comprobar que el ESR reproducido coincida, dentro de tolerancia numérica, con los valores ya registrados por CoreAudioML.
+**Estado 2026-10-23:** el evaluador común ya fue implementado y ejecutado sobre **20/20 runs** sin faltantes ni errores. Calcula ESR, MAE, MSE, RMSE, MR-STFT y error de loudness (LUFS, mediante `pyloudnorm` cuando está instalado), sin normalizar amplitudes ni remuestrear señales. Los ESR reproducen los valores registrados por CoreAudioML dentro de la tolerancia definida.
 
 ### Fase C — completar arquitecturas
-7. entrenar los seis LSTM scratch faltantes;
+7. ✅ completar los ocho LSTM scratch;
 8. seleccionar e implementar una TCN causal reproducible;
 9. realizar primero pilotos TCN en Starcaster50 y DynaComp50;
 10. si los pilotos son correctos, ejecutar 25/75/100.
