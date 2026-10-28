@@ -4349,4 +4349,278 @@ Prioridades inmediatas:
 
 ---
 
-**FIN DEL ESTADO ACTUALIZADO HASTA 2026-10-20.**
+
+# 44. Cierre de los seis LSTM32 scratch faltantes — 2026-10-23
+
+[RESULTADO] Finalizaron correctamente los seis entrenamientos LSTM32 scratch que habían quedado ejecutándose desde la actualización anterior:
+
+- `starcaster25_lstm32_scratch_v1-`;
+- `starcaster75_lstm32_scratch_v1-`;
+- `starcaster100_lstm32_scratch_v1-`;
+- `mxrdynacomp25_lstm32_scratch_v1-`;
+- `mxrdynacomp75_lstm32_scratch_v1-`;
+- `mxrdynacomp100_lstm32_scratch_v1-`.
+
+[CONFIGURACIÓN] Se mantuvo la configuración ya fijada para los baselines LSTM a 50%:
+
+- `SimpleRNN`;
+- unidad recurrente LSTM;
+- `hidden_size=32`;
+- entrenamiento scratch;
+- máximo 100 epochs;
+- validation cada epoch;
+- batch size 50;
+- `val_chunk=20000`;
+- `test_chunk=20000`;
+- CUDA habilitado.
+
+[RESULTADO] Resumen de `training_stats.json`:
+
+| Run | Epoch final | Best epoch | Best val | Test loss best | Test ESR best |
+|---|---:|---:|---:|---:|---:|
+| Starcaster25 LSTM32 scratch | 56 | 30 | 0.276427 | 0.630302 | 0.673416 |
+| Starcaster75 LSTM32 scratch | 60 | 34 | 0.393949 | 0.910236 | 1.179052 |
+| Starcaster100 LSTM32 scratch | 72 | 46 | 0.302803 | 0.960641 | 1.140583 |
+| DynaComp25 LSTM32 scratch | 28 | 2 | 0.728949 | 0.792117 | 1.127779 |
+| DynaComp75 LSTM32 scratch | 27 | 1 | 0.737788 | 0.849671 | 0.959539 |
+| DynaComp100 LSTM32 scratch | 27 | 1 | 0.742691 | 0.762906 | 0.864724 |
+
+[OBSERVACIÓN] El comportamiento de validation vuelve a diferenciar claramente los dos efectos.
+
+Para Starcaster, los mejores checkpoints LSTM aparecen relativamente tarde:
+
+- 25%: epoch 30;
+- 50%: epoch 96;
+- 75%: epoch 34;
+- 100%: epoch 46.
+
+Para Dyna Comp aparecen prácticamente al comienzo:
+
+- 25%: epoch 2;
+- 50%: epoch 1;
+- 75%: epoch 1;
+- 100%: epoch 1.
+
+[INTERPRETACIÓN] El patrón de Dyna Comp ya no puede considerarse una anomalía aislada del run al 50%. Se repite sistemáticamente en los cuatro settings. Después de los primeros epochs la loss de entrenamiento continúa disminuyendo, mientras validation empeora o no recupera el mínimo inicial.
+
+No se concluye todavía que la causa sea únicamente overfitting. Entre las hipótesis abiertas están:
+
+- diferencia de distribución entre train y validation;
+- sensibilidad del compresor al nivel/estructura temporal de la señal de entrada;
+- posible desajuste entre la loss interna de Wright y el comportamiento dinámico que se desea modelar;
+- capacidad/regularización de la LSTM bajo esta configuración.
+
+[ESTADO] Con estos seis runs, la matriz principal avanzó de **10/24 a 16/24 modelos scratch**:
+
+- CNN: 8/8;
+- LSTM: 8/8;
+- TCN: 0/8.
+
+---
+
+# 45. Manifest ampliado y evaluación común de 20 runs — 2026-10-23
+
+[IMPLEMENTACIÓN] Los seis nuevos LSTM se añadieron a `configs/evaluation_manifest.json`.
+
+[RESULTADO] El manifest pasó de 14 a **20 runs canónicos**:
+
+- 16 experimentos core scratch: 8 CNN + 8 LSTM;
+- 4 experimentos complementarios de fine-tuning a 50%.
+
+[EXPERIMENTO] Se volvió a ejecutar:
+
+```cmd
+python scripts\evaluate_all_existing_models.py
+```
+
+[RESULTADO] El batch terminó con:
+
+```text
+DONE: 20 evaluated, 0 missing/error
+```
+
+[RESULTADO] Los **20/20 ESR históricos disponibles** fueron reproducidos por el evaluador externo dentro de la tolerancia `1e-5`.
+
+[RESULTADO] Métricas comunes de los seis LSTM recién incorporados:
+
+| Run | ESR | MAE | MR-STFT | LUFS error (dB) |
+|---|---:|---:|---:|---:|
+| Starcaster25 LSTM32 scratch | 0.673416 | 0.031690 | 3.082182 | 0.905 |
+| Starcaster75 LSTM32 scratch | 1.179052 | 0.054895 | 4.051253 | 1.349 |
+| Starcaster100 LSTM32 scratch | 1.140583 | 0.053191 | 3.033465 | 0.469 |
+| DynaComp25 LSTM32 scratch | 1.127779 | 0.031221 | 1.818048 | 6.724 |
+| DynaComp75 LSTM32 scratch | 0.959539 | 0.031079 | 2.027137 | 5.373 |
+| DynaComp100 LSTM32 scratch | 0.864724 | 0.029537 | 2.091518 | 4.727 |
+
+[RESULTADO] Se regeneraron:
+
+- `results/evaluation/<run_id>.json`;
+- `results/evaluation/experiment_registry.csv`;
+- `docs/experiment_registry.md`.
+
+[DECISIÓN] `docs/experiment_registry.md` pasa a ser la referencia rápida para consultar las métricas comunes de fidelidad de los experimentos canónicos.
+
+---
+
+# 46. Comparación preliminar CNN vs. LSTM sobre la matriz completa — 2026-10-23
+
+[METODOLOGÍA] La comparación de esta sección usa únicamente los resultados del evaluador externo común sobre `test_out_bestv.wav`, con el checkpoint seleccionado exclusivamente por validation.
+
+Todas las métricas siguientes se interpretan como **menor = mejor**.
+
+## 46.1 Starcaster Distortion
+
+[RESULTADO] CNN obtiene menor error que LSTM en los cuatro settings para las cuatro métricas principales disponibles:
+
+| Setting | ESR ganador | MAE ganador | MR-STFT ganador | LUFS ganador |
+|---:|---|---|---|---|
+| 25 | CNN | CNN | CNN | CNN |
+| 50 | CNN | CNN | CNN | CNN |
+| 75 | CNN | CNN | CNN | CNN |
+| 100 | CNN | CNN | CNN | CNN |
+
+[OBSERVACIÓN] Las diferencias de ESR son pequeñas en algunos settings, especialmente 25% y 100%, pero la diferencia espectral medida mediante MR-STFT es mucho más marcada y consistentemente favorece a CNN.
+
+[INTERPRETACIÓN] Bajo el protocolo actual, la CNN presenta una ventaja consistente frente a la LSTM para el modelado del Starcaster, particularmente en fidelidad espectral.
+
+No se utiliza un umbral absoluto de MR-STFT para declarar un valor “bueno” o “malo”; solamente se comparan modelos evaluados con exactamente la misma configuración.
+
+## 46.2 MXR Dyna Comp
+
+[RESULTADO] La comparación es dependiente de la métrica y del setting.
+
+ESR:
+
+- 25%: CNN menor;
+- 50%: CNN menor;
+- 75%: LSTM menor;
+- 100%: LSTM menor.
+
+MAE muestra el mismo patrón general:
+
+- CNN menor en 25% y 50%;
+- LSTM menor en 75% y 100%.
+
+MR-STFT:
+
+- 25%: CNN menor;
+- 50%, 75% y 100%: LSTM menor.
+
+LUFS absolute error:
+
+- CNN menor en **25%, 50%, 75% y 100%**.
+
+[RESULTADO] El contraste es especialmente visible en settings altos. Ejemplo DynaComp100:
+
+- CNN ESR = 0.951159;
+- LSTM ESR = 0.864724;
+- CNN MR-STFT = 2.900078;
+- LSTM MR-STFT = 2.091518;
+- CNN LUFS error = 0.860 dB;
+- LSTM LUFS error = 4.727 dB.
+
+[INTERPRETACIÓN] Una única métrica produciría conclusiones incompletas. Para DynaComp100, ESR y MR-STFT favorecen LSTM, mientras que el error de loudness favorece ampliamente CNN.
+
+[DECISIÓN METODOLÓGICA] Este resultado refuerza la necesidad de mantener una evaluación multidimensional. ESR, MAE, MR-STFT y LUFS describen aspectos distintos de la fidelidad y no deben reducirse prematuramente a un único escalar.
+
+[CAUTELA] LUFS cuantifica loudness global, pero no describe por sí solo toda la evolución temporal de la compresión. Sigue abierta la posibilidad de añadir una métrica de envolvente/dinámica específica para el Dyna Comp.
+
+---
+
+# 47. Material gráfico preliminar para comparación CNN vs. LSTM — 2026-10-23
+
+[IMPLEMENTACIÓN LOCAL] Se preparó un script auxiliar para visualizar las métricas comunes por setting y arquitectura.
+
+[RESULTADO] Se generaron localmente gráficas scratch CNN vs. LSTM para:
+
+- Starcaster — ESR;
+- Starcaster — MR-STFT;
+- Starcaster — LUFS absolute error;
+- Dyna Comp — ESR;
+- Dyna Comp — MR-STFT;
+- Dyna Comp — LUFS absolute error.
+
+También se generó una comparación ESR de los experimentos scratch vs. fine-tuning a 50%.
+
+[OBSERVACIÓN] Al momento de esta actualización, el script auxiliar de estas gráficas y las nuevas imágenes comparativas **no aparecen todavía versionados en el repositorio remoto**. No se registran como archivos publicados hasta realizar un commit posterior.
+
+[DECISIÓN] Para presentación preliminar se priorizan las seis gráficas CNN vs. LSTM. Para la tesis final se considera preferible usar líneas en lugar de barras para las métricas por setting, ya que 25 → 50 → 75 → 100 constituye una variable ordenada.
+
+---
+
+# 48. Revisión del protocolo de métricas y preparación para reunión — 2026-10-23
+
+[DOCUMENTACIÓN] Se actualizó `docs/metricas_evaluacion.md`.
+
+[CORRECCIÓN] Las ecuaciones LaTeX que estaban delimitadas con corchetes normales se cambiaron a bloques matemáticos Markdown/LaTeX con `$$ ... $$`, y los símbolos inline se ajustaron a `$...$`, para que puedan renderizarse correctamente en visores Markdown con soporte matemático.
+
+[ACTUALIZACIÓN] El documento ahora refleja:
+
+- CNN scratch = 8/8;
+- LSTM scratch = 8/8;
+- TCN scratch = 0/8;
+- evaluador común ejecutado sobre 20/20 runs;
+- validación de ESR común;
+- TCN como siguiente arquitectura pendiente.
+
+[PREPARACIÓN] Se estructuró un guion para discutir con la asesora los resultados y el protocolo antes de iniciar TCN.
+
+Puntos técnicos que deben poder explicarse:
+
+- **ESR:** error temporal normalizado por la energía de la señal objetivo;
+- **MAE:** diferencia absoluta promedio muestra a muestra;
+- **MR-STFT:** diferencia tiempo-frecuencia evaluada a múltiples resoluciones;
+- **LUFS error:** diferencia de loudness global entre target y predicción.
+
+[INTERPRETACIÓN] Todas las anteriores se usan con criterio “menor = mejor”, pero responden a preguntas diferentes. El caso DynaComp demuestra empíricamente por qué no conviene elegir arquitectura usando una sola.
+
+[PREGUNTAS ABIERTAS PARA LA ASESORA]
+
+1. confirmar si ESR + MAE + MR-STFT + LUFS quedan como conjunto principal;
+2. decidir si se añade una métrica específica de envolvente/dinámica para compresión;
+3. decidir si el patrón de validation temprana de los LSTM DynaComp requiere investigación adicional antes de continuar o puede documentarse como hallazgo/limitación;
+4. confirmar la arquitectura TCN concreta y el protocolo de pilotos a 50%;
+5. confirmar settings definitivos 25/50/75/100 y documentar la ausencia de 0% respecto al plan inicial;
+6. mantener fine-tuning solamente como experimento complementario a 50%;
+7. posteriormente congelar el benchmark de eficiencia: parámetros, tamaño, tiempo de inferencia, RTF y memoria pico.
+
+[CAUTELA] No se registran en este diario decisiones tomadas durante o después de la reunión mientras no exista evidencia/documentación de ellas. Esta actualización captura únicamente el estado técnico efectivamente alcanzado y el material preparado.
+
+---
+
+# 49. Resumen ejecutivo actualizado — actualización documental 2026-10-27
+
+El último avance técnico documentado corresponde al trabajo completado hasta 2026-10-23.
+
+Estado actual verificable en el repositorio:
+
+- datasets Starcaster y Dyna Comp procesados/alineados en 25/50/75/100;
+- CNN scratch: **8/8 completadas**;
+- LSTM32 scratch: **8/8 completadas**;
+- TCN scratch: **0/8**;
+- matriz core: **16/24**;
+- fine-tuning complementario a 50%: 4 runs completados;
+- manifest canónico: 20 runs;
+- evaluación común: **20/20, 0 missing/error**;
+- ESR histórico: **20/20 reproducido dentro de tolerancia**;
+- registry común actualizado;
+- protocolo de métricas actualizado;
+- comparación preliminar CNN vs. LSTM disponible;
+- Starcaster favorece consistentemente CNN bajo las métricas comunes actuales;
+- Dyna Comp muestra un trade-off entre error temporal/espectral y loudness;
+- patrón de best validation extremadamente temprano confirmado en los cuatro LSTM DynaComp;
+- TCN sigue siendo la tercera arquitectura obligatoria y el siguiente bloque principal.
+
+Prioridades siguientes:
+
+1. incorporar al diario cualquier decisión real tomada con la asesora que aún no haya sido registrada;
+2. congelar selección/configuración TCN;
+3. ejecutar pilotos TCN a 50% en Starcaster y Dyna Comp;
+4. completar los ocho TCN scratch si los pilotos validan la configuración;
+5. ejecutar benchmark común de eficiencia;
+6. generar las figuras finales con CNN/LSTM/TCN;
+7. analizar formalmente el compromiso fidelidad/costo computacional.
+
+---
+
+**FIN DEL ESTADO ACTUALIZADO DOCUMENTALMENTE AL 2026-10-27; ÚLTIMO AVANCE TÉCNICO REGISTRADO: 2026-10-23.**
