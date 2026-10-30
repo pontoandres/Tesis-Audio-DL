@@ -374,8 +374,6 @@ def main() -> None:
     folder, prefix, run_dir = build_paths(
         args.effect, args.setting, args.run_name
     )
-    run_dir.mkdir(parents=True, exist_ok=True)
-
     fs_train, x_train, y_train = load_split(folder, prefix, "train")
     fs_val, x_val, y_val = load_split(folder, prefix, "val")
     fs_test, x_test, y_test = load_split(folder, prefix, "test")
@@ -408,6 +406,31 @@ def main() -> None:
     print(f"Run directory    : {run_dir}")
     print("=" * 72)
 
+    if args.smoke_test:
+        model.train()
+        xb, yb = next(
+            iter_training_batches(
+                x_train,
+                y_train,
+                args.segment_length,
+                context,
+                min(args.batch_size, 2),
+            )
+        )
+        xb = xb.to(device)
+        yb = yb.to(device)
+        out = model(xb)
+        loss = training_loss(out, yb)
+        loss.backward()
+
+        print(f"Smoke input      : {tuple(xb.shape)}")
+        print(f"Smoke output     : {tuple(out.shape)}")
+        print(f"Smoke target     : {tuple(yb.shape)}")
+        print(f"Smoke loss       : {loss.item():.6f}")
+        print("SMOKE TEST OK")
+        return
+
+    run_dir.mkdir(parents=True, exist_ok=True)
     config = {
         "architecture": "TCN300CInspired",
         "effect": args.effect,
@@ -434,30 +457,6 @@ def main() -> None:
     }
     with open(run_dir / "model_config.json", "w", encoding="utf-8") as f:
         json.dump(config, f, indent=2)
-
-    if args.smoke_test:
-        model.train()
-        xb, yb = next(
-            iter_training_batches(
-                x_train,
-                y_train,
-                args.segment_length,
-                context,
-                min(args.batch_size, 2),
-            )
-        )
-        xb = xb.to(device)
-        yb = yb.to(device)
-        out = model(xb)
-        loss = training_loss(out, yb)
-        loss.backward()
-
-        print(f"Smoke input      : {tuple(xb.shape)}")
-        print(f"Smoke output     : {tuple(out.shape)}")
-        print(f"Smoke target     : {tuple(yb.shape)}")
-        print(f"Smoke loss       : {loss.item():.6f}")
-        print("SMOKE TEST OK")
-        return
 
     if device.type == "cuda":
         torch.cuda.reset_peak_memory_stats(device)
