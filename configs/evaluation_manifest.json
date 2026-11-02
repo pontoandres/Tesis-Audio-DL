@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "description": "Canonical thesis runs to evaluate with the common output-level metric pipeline. Fine-tuning runs are tagged as complementary transfer-learning experiments.",
+  "description": "Canonical thesis runs to evaluate with the common output-level metric pipeline. Core matrix includes CNN, LSTM and TCN scratch runs; fine-tuning runs are tagged as complementary transfer-learning experiments.",
   "runs": [
     {
       "id": "starcaster25_cnn_scratch",
@@ -245,6 +245,102 @@
       "prediction": "test_out_bestv.wav",
       "checkpoint": "model_best.json",
       "role": "transfer_learning"
+    },
+    {
+      "id": "starcaster25_tcn300c_scratch",
+      "effect": "starcaster",
+      "setting": 25,
+      "architecture": "TCN300C",
+      "training_mode": "scratch",
+      "run_dir": "results/starcaster25_tcn300c_scratch_v1-",
+      "target": "data/processed/starcaster/25/test/starcaster25-target.wav",
+      "prediction": "test_out_bestv.wav",
+      "checkpoint": "model_best.pt",
+      "role": "core"
+    },
+    {
+      "id": "starcaster50_tcn300c_scratch",
+      "effect": "starcaster",
+      "setting": 50,
+      "architecture": "TCN300C",
+      "training_mode": "scratch",
+      "run_dir": "results/starcaster50_tcn300c_scratch_v1-",
+      "target": "data/processed/starcaster/50/test/starcaster50-target.wav",
+      "prediction": "test_out_bestv.wav",
+      "checkpoint": "model_best.pt",
+      "role": "core"
+    },
+    {
+      "id": "starcaster75_tcn300c_scratch",
+      "effect": "starcaster",
+      "setting": 75,
+      "architecture": "TCN300C",
+      "training_mode": "scratch",
+      "run_dir": "results/starcaster75_tcn300c_scratch_v1-",
+      "target": "data/processed/starcaster/75/test/starcaster75-target.wav",
+      "prediction": "test_out_bestv.wav",
+      "checkpoint": "model_best.pt",
+      "role": "core"
+    },
+    {
+      "id": "starcaster100_tcn300c_scratch",
+      "effect": "starcaster",
+      "setting": 100,
+      "architecture": "TCN300C",
+      "training_mode": "scratch",
+      "run_dir": "results/starcaster100_tcn300c_scratch_v1-",
+      "target": "data/processed/starcaster/100/test/starcaster100-target.wav",
+      "prediction": "test_out_bestv.wav",
+      "checkpoint": "model_best.pt",
+      "role": "core"
+    },
+    {
+      "id": "dynacomp25_tcn300c_scratch",
+      "effect": "dynacomp",
+      "setting": 25,
+      "architecture": "TCN300C",
+      "training_mode": "scratch",
+      "run_dir": "results/mxrdynacomp25_tcn300c_scratch_v1-",
+      "target": "data/processed/mxrdynacomp/25/test/mxrdynacomp25-target.wav",
+      "prediction": "test_out_bestv.wav",
+      "checkpoint": "model_best.pt",
+      "role": "core"
+    },
+    {
+      "id": "dynacomp50_tcn300c_scratch",
+      "effect": "dynacomp",
+      "setting": 50,
+      "architecture": "TCN300C",
+      "training_mode": "scratch",
+      "run_dir": "results/mxrdynacomp50_tcn300c_scratch_v1-",
+      "target": "data/processed/mxrdynacomp/50/test/mxrdynacomp50-target.wav",
+      "prediction": "test_out_bestv.wav",
+      "checkpoint": "model_best.pt",
+      "role": "core"
+    },
+    {
+      "id": "dynacomp75_tcn300c_scratch",
+      "effect": "dynacomp",
+      "setting": 75,
+      "architecture": "TCN300C",
+      "training_mode": "scratch",
+      "run_dir": "results/mxrdynacomp75_tcn300c_scratch_v1-",
+      "target": "data/processed/mxrdynacomp/75/test/mxrdynacomp75-target.wav",
+      "prediction": "test_out_bestv.wav",
+      "checkpoint": "model_best.pt",
+      "role": "core"
+    },
+    {
+      "id": "dynacomp100_tcn300c_scratch",
+      "effect": "dynacomp",
+      "setting": 100,
+      "architecture": "TCN300C",
+      "training_mode": "scratch",
+      "run_dir": "results/mxrdynacomp100_tcn300c_scratch_v1-",
+      "target": "data/processed/mxrdynacomp/100/test/mxrdynacomp100-target.wav",
+      "prediction": "test_out_bestv.wav",
+      "checkpoint": "model_best.pt",
+      "role": "core"
     }
   ]
 }
