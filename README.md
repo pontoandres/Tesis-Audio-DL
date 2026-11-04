@@ -5,7 +5,7 @@
 
 Este repositorio contiene el código, los experimentos, los resultados y la documentación técnica del proyecto de grado. El objetivo es comparar arquitecturas **CNN, LSTM y TCN** para aproximar mediante aprendizaje profundo el comportamiento de pedales físicos de guitarra, evaluando tanto la **fidelidad de la señal** como la **eficiencia computacional**.
 
-> **Estado del repositorio: 2026-10-20.** La CNN está completa para los settings 25/50/75/100 de ambos efectos; existen baselines LSTM a 50% y experimentos de transferencia a 50%. Los seis LSTM scratch restantes están actualmente en entrenamiento y la TCN todavía está pendiente de selección/congelamiento.
+> **Estado del repositorio: 2026-11-03.** La matriz principal está completa: 8 CNN scratch + 8 LSTM scratch + 8 TCN scratch = **24/24 modelos core**. El manifest contiene además 4 experimentos complementarios de transferencia a 50%, para un total de **28 runs canónicos**, todos evaluados con el pipeline común sin faltantes ni errores.
 
 ---
 
@@ -17,7 +17,7 @@ La comparación principal se organiza sobre tres familias:
 
 - **CNN** — GatedConvNet adaptada de Wright.
 - **LSTM** — SimpleRNN con unidad LSTM; configuración actual de 32 unidades ocultas.
-- **TCN** — tercera arquitectura prevista; selección final todavía pendiente.
+- **TCN** — implementación causal inspirada en TCN-300-C: 4 bloques, 32 canales, kernel 13, dilaciones 1/10/100/1000, receptive field ≈302 ms y 43,873 parámetros.
 
 ---
 
@@ -59,16 +59,16 @@ Los pares se alinean temporalmente antes del entrenamiento. El pipeline utiliza 
 
 | Efecto | Setting | CNN scratch | LSTM scratch | TCN scratch |
 |---|---:|---:|---:|---:|
-| Starcaster | 25 | ✅ | en entrenamiento | pendiente |
-| Starcaster | 50 | ✅ | ✅ | pendiente |
-| Starcaster | 75 | ✅ | en entrenamiento | pendiente |
-| Starcaster | 100 | ✅ | en entrenamiento | pendiente |
-| Dyna Comp | 25 | ✅ | en entrenamiento | pendiente |
-| Dyna Comp | 50 | ✅ | ✅ | pendiente |
-| Dyna Comp | 75 | ✅ | en entrenamiento | pendiente |
-| Dyna Comp | 100 | ✅ | en entrenamiento | pendiente |
+| Starcaster | 25 | ✅ | ✅ | ✅ |
+| Starcaster | 50 | ✅ | ✅ | ✅ |
+| Starcaster | 75 | ✅ | ✅ | ✅ |
+| Starcaster | 100 | ✅ | ✅ | ✅ |
+| Dyna Comp | 25 | ✅ | ✅ | ✅ |
+| Dyna Comp | 50 | ✅ | ✅ | ✅ |
+| Dyna Comp | 75 | ✅ | ✅ | ✅ |
+| Dyna Comp | 100 | ✅ | ✅ | ✅ |
 
-Antes de completar los seis LSTM en curso, la matriz central tiene **10/24 modelos scratch** terminados.
+La matriz central está completa: **24/24 modelos scratch**.
 
 ### Transfer learning — experimento complementario
 
@@ -127,6 +127,8 @@ Tesis-Audio-DL/
     ├── compare_splits_dynacomp.py
     ├── evaluate_model_outputs.py
     ├── evaluate_all_existing_models.py
+    ├── train_tcn.py
+    ├── plot_meeting_graphs.py
     ├── plot_transfer_learning_results.py
     └── prepare50.py
 ~~~
@@ -369,7 +371,7 @@ results/evaluation/experiment_registry.csv
 docs/experiment_registry.md
 ~~~
 
-El primer batch común evaluó **14/14 experimentos sin errores** y reprodujo todos los ESR históricos de CoreAudioML dentro de una tolerancia de 1e-5.
+El batch común actual evaluó **28/28 experimentos sin errores** y reprodujo todos los ESR históricos disponibles dentro de una tolerancia de 1e-5.
 
 ---
 
@@ -422,13 +424,14 @@ La tabla completa y actualizable está en [docs/experiment_registry.md](docs/exp
 
 Observaciones actuales:
 
-- La transferencia **Big Muff -> Starcaster** reduce claramente la pérdida de validation para CNN y LSTM y acelera la aparición del mejor checkpoint.
-- La transferencia **Big Muff -> Dyna Comp** no presenta una ventaja consistente.
-- ESR, MAE, MR-STFT y LUFS pueden ordenar los modelos de manera distinta, lo que justifica una evaluación multidimensional.
-- En Dyna Comp aparecen señales de posible sobreajuste temprano o diferencia de distribución entre splits en algunos runs recurrentes.
+- Para **Starcaster**, la TCN obtiene el menor ESR y MR-STFT en los cuatro settings, mientras la CNN obtiene menor MAE y error LUFS en los cuatro.
+- Para **Dyna Comp**, la comparación depende de la métrica y del setting; la TCN no presenta una ventaja clara frente a CNN/LSTM bajo las métricas actuales.
+- En Dyna Comp, LSTM y TCN muestran un patrón sistemático de mejor validation extremadamente temprano, mientras training continúa disminuyendo.
+- ESR, MAE, MR-STFT y LUFS ordenan los modelos de manera distinta, lo que justifica una evaluación multidimensional.
+- La transferencia **Big Muff -> Starcaster** mejora principalmente validation/convergencia, pero las ganancias de test son pequeñas; en Dyna Comp no aparece una ventaja consistente.
 - El split de test presenta diferencias de nivel respecto a train/validation que deben considerarse al interpretar generalización.
 
-Estas observaciones son provisionales hasta completar LSTM, TCN y el benchmark de eficiencia.
+La matriz de fidelidad ya está completa; falta incorporar el benchmark de eficiencia y las evaluaciones adicionales antes de cerrar conclusiones finales.
 
 ---
 
@@ -436,13 +439,12 @@ Estas observaciones son provisionales hasta completar LSTM, TCN y el benchmark d
 
 La prioridad inmediata es:
 
-1. terminar los seis LSTM scratch actualmente en entrenamiento;
-2. añadirlos al manifest de evaluación;
-3. regenerar el registry;
-4. seleccionar y validar una TCN causal sobre Starcaster50 y DynaComp50;
-5. completar los ocho TCN scratch;
-6. ejecutar el benchmark común de eficiencia;
-7. producir tablas y gráficas finales de fidelidad vs. costo computacional.
+1. generar figuras finales CNN vs. LSTM vs. TCN para ESR, MAE, MR-STFT y LUFS;
+2. ejecutar el benchmark común de eficiencia;
+3. analizar formalmente el compromiso fidelidad vs. costo computacional;
+4. concretar la evaluación adicional de generalización sugerida por la asesora;
+5. diseñar la evaluación perceptual/cualitativa con audios;
+6. comenzar la escritura del documento final y del póster usando los templates entregados por la asesora.
 
 ---
 
