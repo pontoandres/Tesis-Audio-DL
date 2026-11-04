@@ -1,0 +1,32 @@
+{
+  "architecture": "TCN300CInspired",
+  "effect": "starcaster",
+  "setting": 25,
+  "sample_rate": 44100,
+  "channels": 32,
+  "kernel_size": 13,
+  "dilations": [
+    1,
+    10,
+    100,
+    1000
+  ],
+  "receptive_field_samples": 13333,
+  "receptive_field_ms": 302.33560090702946,
+  "causal": true,
+  "conditioning": false,
+  "loss": {
+    "ESRPre": 0.75,
+    "DC": 0.25,
+    "pre_filter": [
+      -0.85,
+      1.0
+    ]
+  },
+  "segment_length": 22050,
+  "batch_size": 16,
+  "learning_rate": 0.005,
+  "weight_decay": 0.0001,
+  "patience": 25,
+  "trainable_parameters": 43873
+}
