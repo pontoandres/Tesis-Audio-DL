@@ -129,7 +129,7 @@ Resultados utilizados directamente desde el repositorio:
 ## 9. Siguientes pasos
 
 - Incorporar al documento las gráficas de validation loss scratch vs. fine-tuning ya generadas para Starcaster y Dyna Comp.
-- Incorporar la TCN con el mismo protocolo experimental.
+- Mantener este estudio de transferencia separado de la comparación principal CNN/LSTM/TCN, que ya fue completada para los 24 runs scratch.
 - Medir parámetros, tamaño en disco, latencia de inferencia y real-time factor bajo un protocolo común.
 - Escuchar y documentar ejemplos de audio generados por los checkpoints de mejor validación.
 - Integrar estos resultados en la sección experimental del documento de tesis después de revisión con la asesora.
