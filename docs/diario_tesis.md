@@ -4623,4 +4623,210 @@ Prioridades siguientes:
 
 ---
 
-**FIN DEL ESTADO ACTUALIZADO DOCUMENTALMENTE AL 2026-10-27; ÚLTIMO AVANCE TÉCNICO REGISTRADO: 2026-10-23.**
+---
+
+# 50. Update de reunión con la asesora y nuevas líneas de evaluación — registrado 2026-11-03
+
+[REUNIÓN / ACTUALIZACIÓN RETROSPECTIVA] Se documenta el update comunicado después de la revisión del protocolo de métricas.
+
+[RESULTADO] La asesora recibió favorablemente el enfoque de evaluación basado en múltiples métricas. No se reportaron objeciones al uso conjunto de ESR, MAE, MR-STFT y error LUFS como base cuantitativa.
+
+[SUGERENCIA] Se propuso explorar una evaluación adicional sobre material que represente claramente señal no vista durante entrenamiento. La definición exacta todavía no quedó cerrada. Debe aclararse si corresponde a un nuevo conjunto externo, un test adicional o alguna otra forma de evaluar generalización.
+
+[SUGERENCIA] Se propuso complementar la evaluación objetiva con una evaluación perceptual/cualitativa mediante una encuesta online con audios. Como posibles participantes se mencionaron conocidos y personas de la Facultad de Música.
+
+[CAUTELA] El diseño de la encuesta todavía no está congelado. No se registran todavía número de participantes, escala, protocolo de presentación, método de randomización ni análisis estadístico.
+
+[DOCUMENTO] La asesora compartió los templates/formato para el documento final y el póster. Estos materiales se incorporarán al flujo de trabajo en una fase posterior de escritura.
+
+[GESTIÓN] La reunión posterior prevista no se realizó por indisponibilidad de la asesora, por lo que no hubo decisiones nuevas que registrar en ese intervalo.
+
+---
+
+# 51. Selección, implementación y pilotos de la TCN — 2026-10-29
+
+[DECISIÓN] Se seleccionó una TCN causal inspirada en TCN-300-C de Steinmetz & Reiss como tercera arquitectura de la comparación principal.
+
+[IMPLEMENTACIÓN] Se añadió `scripts/train_tcn.py` como pipeline propio del proyecto, evitando depender de modificar nuevamente el submódulo de Wright para esta arquitectura.
+
+[CONFIGURACIÓN] La TCN usada en todos los runs quedó fijada con:
+
+- 4 bloques convolucionales causales;
+- 32 canales;
+- kernel size = 13;
+- dilaciones = 1, 10, 100, 1000;
+- receptive field = 13333 muestras;
+- receptive field ≈ 302.34 ms a 44.1 kHz;
+- 43,873 parámetros entrenables;
+- salida con `tanh`;
+- sin FiLM ni conditioning;
+- un modelo independiente por setting;
+- batch size = 16;
+- máximo 100 epochs;
+- early stopping con patience 25;
+- Adam, learning rate inicial 0.005;
+- weight decay = 1e-4.
+
+[DECISIÓN METODOLÓGICA] Para reducir confounds entre arquitecturas se mantuvo la misma loss base usada en Wright/CoreAudioML:
+
+`0.75 * ESRPre + 0.25 * DC`
+
+con preénfasis `[-0.85, 1]`.
+
+[VALIDACIÓN] Se realizaron smoke tests para Starcaster50 y DynaComp50. Ambos pasaron forward, loss y backward usando CUDA, con dimensiones de salida iguales a las del target.
+
+[EXPERIMENTO] Piloto Starcaster50 TCN:
+
+- entrenamiento completado hasta epoch 100;
+- best epoch = 80;
+- best val = 0.324861;
+- test ESR best = 0.949926.
+
+[EXPERIMENTO] Piloto DynaComp50 TCN:
+
+- early stopping en epoch 27;
+- best epoch = 1;
+- best val = 1.048277;
+- test ESR best = 1.209783.
+
+[OBSERVACIÓN] DynaComp50 mostró el mismo patrón ya observado con LSTM: el mejor checkpoint aparece al comienzo, mientras la loss de entrenamiento continúa disminuyendo fuertemente y validation empeora.
+
+[DECISIÓN] Como la arquitectura entrenó de forma estable, generó audio válido y el evaluador común funcionó, se congeló la configuración TCN y los pilotos de 50% se conservaron como parte de los ocho runs definitivos.
+
+---
+
+# 52. Cierre de los ocho TCN scratch — 2026-10-29
+
+[RESULTADO] Finalizó la matriz TCN completa para ambos efectos y los cuatro settings.
+
+Resumen de entrenamiento:
+
+| Run | Best epoch | Best val | Test ESR best |
+|---|---:|---:|---:|
+| Starcaster25 TCN | 53 | 0.306975 | 0.611206 |
+| Starcaster50 TCN | 80 | 0.324861 | 0.949926 |
+| Starcaster75 TCN | 47 | 0.466627 | 1.057159 |
+| Starcaster100 TCN | 97 | 0.405711 | 1.124564 |
+| DynaComp25 TCN | 1 | 1.085645 | 1.269825 |
+| DynaComp50 TCN | 1 | 1.048277 | 1.209783 |
+| DynaComp75 TCN | 1 | 1.049838 | 1.205342 |
+| DynaComp100 TCN | 1 | 1.040024 | 1.185735 |
+
+[RESULTADO] La matriz principal quedó completa:
+
+- CNN scratch: 8/8;
+- LSTM scratch: 8/8;
+- TCN scratch: 8/8;
+- total core: **24/24**.
+
+[OBSERVACIÓN] En Starcaster los mejores checkpoints TCN aparecen en epochs relativamente tardíos: 53, 80, 47 y 97.
+
+[OBSERVACIÓN] En Dyna Comp los cuatro TCN tienen best epoch = 1. El patrón es completamente consistente entre 25/50/75/100.
+
+[INTERPRETACIÓN] El fenómeno de validation temprana en Dyna Comp ya no es exclusivo de la LSTM. También aparece con TCN, lo que fortalece la hipótesis de un efecto sistemático asociado al dataset, distribución entre splits, dinámica del compresor o interacción entre señal y protocolo de entrenamiento. No se atribuye todavía una causa única.
+
+---
+
+# 53. Evaluación común de 28 runs y cierre cuantitativo de la matriz — 2026-11-03
+
+[IMPLEMENTACIÓN] Los ocho TCN scratch se añadieron al manifest canónico.
+
+[RESULTADO] El manifest contiene ahora **28 runs**:
+
+- 24 core scratch;
+- 4 fine-tuning complementarios.
+
+[EXPERIMENTO] Se ejecutó nuevamente:
+
+```cmd
+python scripts\evaluate_all_existing_models.py
+```
+
+[RESULTADO] El batch terminó con:
+
+```text
+DONE: 28 evaluated, 0 missing/error
+```
+
+[RESULTADO] Todos los chequeos ESR contra valores históricos disponibles pasaron dentro de la tolerancia definida.
+
+## 53.1 Métricas TCN comunes
+
+| Run | ESR | MAE | MR-STFT | LUFS error (dB) |
+|---|---:|---:|---:|---:|
+| Starcaster25 TCN | 0.611206 | 0.031685 | 1.305833 | 0.695 |
+| Starcaster50 TCN | 0.949926 | 0.044016 | 1.381391 | 0.842 |
+| Starcaster75 TCN | 1.057159 | 0.053097 | 1.994311 | 0.867 |
+| Starcaster100 TCN | 1.124564 | 0.054118 | 1.626723 | 0.401 |
+| DynaComp25 TCN | 1.269825 | 0.034842 | 2.192171 | 4.048 |
+| DynaComp50 TCN | 1.209783 | 0.035498 | 2.273650 | 4.244 |
+| DynaComp75 TCN | 1.205342 | 0.035554 | 2.321545 | 4.417 |
+| DynaComp100 TCN | 1.185735 | 0.035702 | 2.391191 | 4.431 |
+
+## 53.2 Comparación preliminar de las tres arquitecturas
+
+[RESULTADO] Para Starcaster, TCN obtiene el menor ESR y MR-STFT en los cuatro settings.
+
+Promedios Starcaster:
+
+| Arquitectura | ESR | MAE | MR-STFT | LUFS error (dB) |
+|---|---:|---:|---:|---:|
+| CNN | 0.976334 | 0.044169 | 1.921682 | 0.390750 |
+| LSTM | 1.007093 | 0.046173 | 3.252119 | 0.852250 |
+| TCN | 0.935714 | 0.045729 | 1.577064 | 0.701250 |
+
+[INTERPRETACIÓN] En Starcaster no existe un ganador absoluto en todas las dimensiones:
+
+- TCN domina ESR y MR-STFT;
+- CNN mantiene menor MAE y menor error LUFS;
+- LSTM queda detrás de CNN/TCN en la mayoría de las comparaciones del efecto.
+
+[RESULTADO] Para Dyna Comp la TCN no presenta una ventaja clara frente a CNN/LSTM.
+
+Promedios Dyna Comp:
+
+| Arquitectura | ESR | MAE | MR-STFT | LUFS error (dB) |
+|---|---:|---:|---:|---:|
+| CNN | 0.967692 | 0.029390 | 2.301825 | 0.724500 |
+| LSTM | 0.964000 | 0.030220 | 1.959813 | 5.215500 |
+| TCN | 1.217671 | 0.035399 | 2.294639 | 4.285000 |
+
+[INTERPRETACIÓN] Dyna Comp sigue mostrando un trade-off fuerte:
+
+- CNN mantiene clara ventaja en error LUFS y MAE promedio;
+- LSTM obtiene el mejor ESR promedio y MR-STFT promedio;
+- TCN presenta peor ESR y MAE promedio que CNN/LSTM y error LUFS alto.
+
+[CAUTELA] Estas comparaciones describen únicamente fidelidad objetiva bajo el protocolo común. Todavía falta incorporar eficiencia computacional y, potencialmente, evaluación perceptual/generalización antes de cerrar una conclusión global de arquitectura.
+
+---
+
+# 54. Estado actual y siguientes prioridades — 2026-11-03
+
+Estado verificable:
+
+- dataset procesado/alineado: completo;
+- CNN scratch: 8/8;
+- LSTM scratch: 8/8;
+- TCN scratch: 8/8;
+- matriz core: **24/24**;
+- transferencia complementaria: 4 runs;
+- manifest: 28 runs;
+- evaluación común: **28/28, 0 missing/error**;
+- registry CSV/Markdown actualizado;
+- protocolo de métricas común operativo;
+- script de gráficas actualizado para CNN/LSTM/TCN y las cuatro métricas principales.
+
+Prioridades inmediatas:
+
+1. regenerar figuras con CNN/LSTM/TCN;
+2. revisar visualmente y versionar las nuevas figuras;
+3. ejecutar benchmark común de eficiencia;
+4. analizar fidelidad vs. costo computacional;
+5. concretar evaluación adicional de generalización;
+6. diseñar evaluación perceptual online;
+7. comenzar documento final y póster usando los templates de la asesora.
+
+---
+
+**FIN DEL ESTADO ACTUALIZADO DOCUMENTALMENTE AL 2026-11-03.**
