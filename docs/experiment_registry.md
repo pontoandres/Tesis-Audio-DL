@@ -24,6 +24,14 @@ All fidelity metrics are recalculated with the common external evaluator rather 
 | dynacomp | 25 | LSTM32 | scratch | 1.127779 | 0.031221 | 1.818048 | 6.724 | 0.728949 | 2 |
 | dynacomp | 75 | LSTM32 | scratch | 0.959539 | 0.031079 | 2.027137 | 5.373 | 0.737788 | 1 |
 | dynacomp | 100 | LSTM32 | scratch | 0.864724 | 0.029537 | 2.091518 | 4.727 | 0.742691 | 1 |
+| starcaster | 25 | TCN300C | scratch | 0.611206 | 0.031685 | 1.305833 | 0.695 | 0.306975 | 53 |
+| starcaster | 50 | TCN300C | scratch | 0.949926 | 0.044016 | 1.381391 | 0.842 | 0.324861 | 80 |
+| starcaster | 75 | TCN300C | scratch | 1.057159 | 0.053097 | 1.994311 | 0.867 | 0.466627 | 47 |
+| starcaster | 100 | TCN300C | scratch | 1.124564 | 0.054118 | 1.626723 | 0.401 | 0.405711 | 97 |
+| dynacomp | 25 | TCN300C | scratch | 1.269825 | 0.034842 | 2.192171 | 4.048 | 1.085645 | 1 |
+| dynacomp | 50 | TCN300C | scratch | 1.209783 | 0.035498 | 2.273650 | 4.244 | 1.048277 | 1 |
+| dynacomp | 75 | TCN300C | scratch | 1.205342 | 0.035554 | 2.321545 | 4.417 | 1.049838 | 1 |
+| dynacomp | 100 | TCN300C | scratch | 1.185735 | 0.035702 | 2.391191 | 4.431 | 1.040024 | 1 |
 
 ## Complementary transfer-learning experiments
 
@@ -38,7 +46,7 @@ All fidelity metrics are recalculated with the common external evaluator rather 
 
 When an older CoreAudioML ESR is available, the pipeline compares it against the independently recomputed ESR with tolerance 1e-5.
 
-Validated against previous ESR values: **20/20** within tolerance.
+Validated against previous ESR values: **28/28** within tolerance.
 
 ## Notes
 
