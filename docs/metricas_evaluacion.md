@@ -2,7 +2,7 @@
 
 **Proyecto:** Modelado de efectos de compresión y distorsión de guitarra eléctrica mediante técnicas de aprendizaje profundo  
 **Fecha de definición:** 2026-10-20  
-**Estado:** propuesta para revisión con la asesora antes de congelar el protocolo final.
+**Estado:** conjunto base revisado con la asesora y utilizado en la evaluación común. Se mantienen abiertas extensiones de generalización y evaluación perceptual.
 
 ---
 
@@ -283,20 +283,16 @@ El experimento principal debe quedar balanceado:
 
 | Efecto | Setting | CNN | LSTM | TCN |
 |---|---:|---:|---:|---:|
-| Starcaster | 25 | ✓ | ✓ | pendiente |
-| Starcaster | 50 | ✓ | ✓ | pendiente |
-| Starcaster | 75 | ✓ | ✓ | pendiente |
-| Starcaster | 100 | ✓ | ✓ | pendiente |
-| Dyna Comp | 25 | ✓ | ✓ | pendiente |
-| Dyna Comp | 50 | ✓ | ✓ | pendiente |
-| Dyna Comp | 75 | ✓ | ✓ | pendiente |
-| Dyna Comp | 100 | ✓ | ✓ | pendiente |
+| Starcaster | 25 | ✓ | ✓ | ✓ |
+| Starcaster | 50 | ✓ | ✓ | ✓ |
+| Starcaster | 75 | ✓ | ✓ | ✓ |
+| Starcaster | 100 | ✓ | ✓ | ✓ |
+| Dyna Comp | 25 | ✓ | ✓ | ✓ |
+| Dyna Comp | 50 | ✓ | ✓ | ✓ |
+| Dyna Comp | 75 | ✓ | ✓ | ✓ |
+| Dyna Comp | 100 | ✓ | ✓ | ✓ |
 
-Por tanto, para completar la comparación principal faltan:
-
-- **8 entrenamientos TCN scratch**.
-
-Las matrices **CNN scratch (8/8)** y **LSTM scratch (8/8)** ya están completas.
+La comparación principal está completa: **CNN scratch 8/8, LSTM scratch 8/8 y TCN scratch 8/8**, para un total de **24/24 modelos core**.
 
 Los experimentos de **fine-tuning a 50 %** deben mantenerse como análisis adicional de transferencia de aprendizaje, no como sustitutos de la matriz principal.
 
@@ -407,13 +403,13 @@ y luego un script independiente puede generar automáticamente tablas y figuras.
 5. ejecutar primero sobre los modelos ya existentes;
 6. verificar manualmente varios resultados.
 
-**Estado 2026-10-23:** el evaluador común ya fue implementado y ejecutado sobre **20/20 runs** sin faltantes ni errores. Calcula ESR, MAE, MSE, RMSE, MR-STFT y error de loudness (LUFS, mediante `pyloudnorm` cuando está instalado), sin normalizar amplitudes ni remuestrear señales. Los ESR reproducen los valores registrados por CoreAudioML dentro de la tolerancia definida.
+**Estado 2026-11-03:** el evaluador común fue ejecutado sobre **28/28 runs** sin faltantes ni errores: 24 experimentos core scratch y 4 experimentos complementarios de transferencia. Calcula ESR, MAE, MSE, RMSE, MR-STFT y error de loudness (LUFS, mediante `pyloudnorm` cuando está instalado), sin normalizar amplitudes ni remuestrear señales. Los ESR reproducen los valores históricos disponibles dentro de la tolerancia definida.
 
 ### Fase C — completar arquitecturas
 7. ✅ completar los ocho LSTM scratch;
-8. seleccionar e implementar una TCN causal reproducible;
-9. realizar primero pilotos TCN en Starcaster50 y DynaComp50;
-10. si los pilotos son correctos, ejecutar 25/75/100.
+8. ✅ seleccionar e implementar una TCN causal reproducible;
+9. ✅ realizar pilotos TCN en Starcaster50 y DynaComp50;
+10. ✅ ejecutar la matriz TCN completa 25/50/75/100 en ambos efectos.
 
 ### Fase D — resultados finales
 11. ejecutar el evaluador común sobre todos los modelos;
