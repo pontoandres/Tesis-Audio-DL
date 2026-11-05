@@ -12,7 +12,7 @@
 
 **\*\*Repositorio principal:\*\*** \`https\://github.com/pontoandres/Tesis-Audio-DL.git\`  
 
-**\*\*Última actualización de este log:\*\*** 2026-10-20  
+**\*\*Última actualización de este log:\*\*** 2026-11-05  
 
 **\*\*Estado del documento:\*\*** vivo / acumulativo. No borrar entradas históricas; corregirlas mediante notas posteriores cuando haga falta.
 
@@ -4829,4 +4829,280 @@ Prioridades inmediatas:
 
 ---
 
-**FIN DEL ESTADO ACTUALIZADO DOCUMENTALMENTE AL 2026-11-03.**
+---
+
+# 55. Regeneración de figuras comparativas CNN/LSTM/TCN — 2026-11-05
+
+[IMPLEMENTACIÓN] Se consolidó el script de visualización de resultados para incluir las tres arquitecturas de la matriz core: CNN, LSTM y TCN.
+
+[RESULTADO] Se regeneraron las figuras por efecto y setting para las cuatro métricas comunes:
+
+- ESR;
+- MAE;
+- MR-STFT;
+- error absoluto LUFS.
+
+[RESULTADO] Las figuras comparativas scratch quedaron actualizadas para Starcaster y Dyna Comp con los cuatro settings 25/50/75/100.
+
+[DECISIÓN] Las comparaciones por setting continúan tratándose como resultados primarios. Los promedios entre settings se usan únicamente como resumen descriptivo y no reemplazan la inspección de cada condición.
+
+[INTERPRETACIÓN] La matriz completa confirma dos comportamientos diferentes:
+
+- Starcaster favorece claramente a TCN en ESR y MR-STFT, mientras CNN mantiene ventaja en MAE y LUFS;
+- Dyna Comp no presenta un único ganador, con LSTM favorecida en ESR/MR-STFT promedio y CNN favorecida en MAE/LUFS promedio.
+
+---
+
+# 56. Benchmark común de eficiencia computacional — diseño y corrección del protocolo — 2026-11-05
+
+[OBJETIVO] Se implementó el bloque de eficiencia necesario para responder la segunda mitad de la pregunta de investigación: comparar no solo fidelidad, sino también costo computacional bajo un protocolo común.
+
+[IMPLEMENTACIÓN] Se añadió:
+
+`scripts/benchmark_efficiency.py`
+
+El benchmark reconstruye arquitecturas representativas desde metadata versionada y mide costo de inferencia sin depender de los valores concretos de los pesos entrenados.
+
+[DECISIÓN METODOLÓGICA] No se comparan tamaños crudos de checkpoints porque CNN/LSTM y TCN usan formatos de serialización diferentes. En su lugar se reporta tamaño estandarizado del `state_dict` como bytes de parámetros + buffers persistentes.
+
+[METODOLOGÍA] Métricas de eficiencia reportadas:
+
+- parámetros entrenables;
+- tamaño estandarizado del estado del modelo;
+- tiempo de inferencia mediano;
+- promedio, p95, mínimo y máximo de tiempo;
+- real-time factor, `RTF = tiempo_inferencia / duración_audio`;
+- múltiplo de tiempo real, `1 / RTF`;
+- memoria CUDA pico asignada y reservada.
+
+[METODOLOGÍA] Se usa una señal sintética mono float32 determinista. Esto es apropiado porque esta etapa mide costo arquitectónico y no fidelidad de audio.
+
+[PROBLEMA] La primera versión del benchmark intentaba procesar secuencias completas largas en una sola llamada. En el desktop, la CNN completó CUDA, pero la LSTM produjo:
+
+`RuntimeError: cuDNN error: CUDNN_STATUS_NOT_SUPPORTED`
+
+[FIX] El benchmark se modificó para usar inferencia por bloques de 20,000 muestras, consistente con el tamaño de chunk ya validado en la evaluación de LSTM/TCN.
+
+El esquema final es:
+
+- LSTM: preserva el hidden state entre bloques;
+- CNN: recibe contexto causal izquierdo correspondiente a su receptive field;
+- TCN: recibe 13,332 muestras de contexto causal para producir cada bloque;
+- entradas LSTM se fuerzan contiguas antes de cuDNN.
+
+[DECISIÓN] El benchmark mide el tiempo total para procesar la señal completa a través de todos los bloques. Por tanto, el resultado sigue representando throughput sobre una duración fija de audio.
+
+[CAUTELA] Estas mediciones NO representan latencia end-to-end de una interfaz de audio en vivo. Son mediciones de throughput de inferencia del modelo.
+
+---
+
+# 57. Benchmark final en la laptop RTX 3060 — 2026-11-05
+
+[EXPERIMENTO] Se ejecutó el benchmark final con:
+
+```cmd
+python scripts\benchmark_efficiency.py --device both --seconds 60 --warmup 5 --repeats 20
+```
+
+[METODOLOGÍA] Protocolo final:
+
+- duración de señal: 60.0 s;
+- sample rate: 44.1 kHz;
+- 2,646,000 muestras;
+- chunk de salida: 20,000 muestras, aproximadamente 453.5 ms;
+- warm-up: 5 iteraciones;
+- repeticiones medidas: 20;
+- batch size: 1;
+- CPU threads: 1;
+- dtype: float32;
+- semilla: 42.
+
+[ENTORNO] El benchmark final quedó registrado con:
+
+- Python 3.11.9;
+- PyTorch 2.3.1+cu121;
+- CUDA runtime 12.1;
+- GPU: NVIDIA GeForce RTX 3060 Laptop GPU;
+- CPU del equipo principal: AMD Ryzen 7 5800HS, identificado por el entorno del proyecto.
+
+[RESULTADO] Resultados finales:
+
+| Arquitectura | Device | Params | State size (MB) | Median time (s) | p95 (s) | RTF | Realtime x | CUDA peak (MB) |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| CNN | CPU | 8,305 | 0.0317 | 6.463548 | 6.787814 | 0.107726 | 9.28 | N/A |
+| LSTM | CPU | 4,513 | 0.0172 | 2.359616 | 2.550801 | 0.039327 | 25.43 | N/A |
+| TCN | CPU | 43,873 | 0.1684 | 6.825922 | 7.372778 | 0.113765 | 8.79 | N/A |
+| CNN | CUDA | 8,305 | 0.0317 | 0.912496 | 1.309151 | 0.015208 | 65.75 | 42.40 |
+| LSTM | CUDA | 4,513 | 0.0172 | 1.110357 | 1.135340 | 0.018506 | 54.04 | 80.68 |
+| TCN | CUDA | 43,873 | 0.1684 | 0.184466 | 0.223112 | 0.003074 | 325.26 | 38.88 |
+
+[RESULTADO] Las tres arquitecturas procesan audio más rápido que tiempo real tanto en CPU de un solo thread como en GPU bajo este protocolo.
+
+[INTERPRETACIÓN] En CPU, LSTM es la arquitectura más eficiente en throughput:
+
+- 25.43x tiempo real;
+- RTF 0.039327;
+- además es la arquitectura con menos parámetros y menor tamaño de estado.
+
+[INTERPRETACIÓN] En GPU, TCN es claramente la arquitectura más rápida:
+
+- 325.26x tiempo real;
+- RTF 0.003074;
+- aproximadamente 5 veces menor RTF que CNN y 6 veces menor que LSTM.
+
+[OBSERVACIÓN] El mayor número de parámetros de TCN no implica menor throughput en GPU. Su estructura convolucional se beneficia fuertemente de paralelismo, mostrando por qué número de parámetros y velocidad de inferencia deben reportarse como dimensiones diferentes.
+
+[RESULTADO] La memoria CUDA pico medida fue:
+
+- CNN: 42.40 MB;
+- LSTM: 80.68 MB;
+- TCN: 38.88 MB.
+
+[DECISIÓN] Estos resultados de la laptop RTX 3060 se consideran el benchmark principal de eficiencia. Una corrida previa en el desktop GTX 1060 se conserva solo como sanity check y no se mezcla con la tabla final.
+
+---
+
+# 58. Pipeline de fidelidad vs. eficiencia — 2026-11-05
+
+[IMPLEMENTACIÓN] Se añadió:
+
+`scripts/plot_fidelity_efficiency.py`
+
+El script cruza automáticamente:
+
+- `results/evaluation/experiment_registry.csv`;
+- `results/efficiency/benchmark_efficiency.csv`.
+
+[METODOLOGÍA] Para cada efecto y arquitectura, el punto de fidelidad usa el promedio descriptivo de los cuatro settings 25/50/75/100.
+
+[CORRECCIÓN METODOLÓGICA] Inicialmente se graficó una barra de ±1 desviación estándar entre settings. Se corrigió porque 25/50/75/100 son condiciones experimentales distintas y no réplicas estadísticas.
+
+La versión final usa:
+
+- punto = promedio de los cuatro settings;
+- barra vertical = rango observado mínimo–máximo entre settings.
+
+Esto describe dependencia respecto al setting sin presentar una interpretación inferencial incorrecta.
+
+[DECISIÓN] No se construye un score único que combine ESR, MAE, MR-STFT y LUFS. Cada métrica representa una dimensión distinta de fidelidad y se mantiene separada.
+
+[METODOLOGÍA] En los plots de trade-off:
+
+- eje X = RTF;
+- eje Y = error de fidelidad;
+- menor es mejor en ambos ejes;
+- la zona inferior izquierda representa el compromiso favorable para la métrica particular.
+
+[RESULTADO] Se generaron y versionaron en:
+
+`docs/figures/fidelity_efficiency/`
+
+las figuras de:
+
+- ESR vs RTF en CPU y GPU para ambos efectos;
+- MR-STFT vs RTF en CPU y GPU para ambos efectos;
+- MAE vs RTF GPU para ambos efectos;
+- LUFS vs RTF GPU para ambos efectos;
+- RTF CPU/GPU por arquitectura;
+- parámetros por arquitectura;
+- tamaño de estado por arquitectura;
+- memoria CUDA pico;
+- CSV resumen de fidelidad + eficiencia.
+
+---
+
+# 59. Interpretación preliminar del compromiso fidelidad/costo — 2026-11-05
+
+## 59.1 Starcaster Distortion
+
+[RESULTADO] Promedios de fidelidad:
+
+| Arquitectura | ESR | MAE | MR-STFT | LUFS error (dB) |
+|---|---:|---:|---:|---:|
+| CNN | 0.976334 | 0.044169 | 1.921682 | 0.390750 |
+| LSTM | 1.007093 | 0.046173 | 3.252119 | 0.852250 |
+| TCN | 0.935714 | 0.045729 | 1.577064 | 0.701250 |
+
+[INTERPRETACIÓN] Para ESR vs GPU RTF, TCN presenta simultáneamente menor error promedio y menor costo de inferencia que CNN y LSTM.
+
+[INTERPRETACIÓN] Para MR-STFT vs GPU RTF ocurre el mismo patrón: TCN presenta el menor MR-STFT promedio y el menor RTF.
+
+[RESULTADO] Bajo esas dos dimensiones concretas, TCN ocupa la región más favorable de los plots y domina a CNN/LSTM en el plano error-throughput GPU.
+
+[CAUTELA] Esto no convierte a TCN en ganador absoluto de todas las métricas. CNN conserva menor MAE promedio y menor error LUFS promedio.
+
+[DOCUMENTO] Formulación defendible:
+
+Para Starcaster, TCN ofrece el mejor compromiso observado entre fidelidad medida por ESR/MR-STFT y throughput en GPU, mientras CNN mantiene ventaja en error absoluto muestra a muestra y correspondencia de loudness.
+
+## 59.2 MXR Dyna Comp
+
+[RESULTADO] Promedios de fidelidad:
+
+| Arquitectura | ESR | MAE | MR-STFT | LUFS error (dB) |
+|---|---:|---:|---:|---:|
+| CNN | 0.967692 | 0.029390 | 2.301825 | 0.724500 |
+| LSTM | 0.964000 | 0.030220 | 1.959813 | 5.215500 |
+| TCN | 1.217671 | 0.035399 | 2.294639 | 4.285000 |
+
+[INTERPRETACIÓN] En Dyna Comp desaparece la ventaja global de fidelidad de TCN observada en Starcaster.
+
+- LSTM obtiene el menor ESR promedio, aunque la diferencia respecto a CNN es pequeña;
+- LSTM obtiene el menor MR-STFT promedio;
+- CNN obtiene el menor MAE promedio;
+- CNN obtiene, por amplio margen, el menor error LUFS promedio;
+- TCN mantiene el menor RTF GPU, pero con peor ESR/MAE y un error LUFS elevado.
+
+[INTERPRETACIÓN] Para Dyna Comp existe un trade-off real entre velocidad GPU y fidelidad. No puede seleccionarse una arquitectura ganadora sin especificar qué dimensión de fidelidad y qué plataforma de ejecución se prioriza.
+
+[CAUTELA] La cercanía entre el MR-STFT promedio de CNN y TCN no debe presentarse como una diferencia fuerte. Se debe conservar la inspección por setting y evitar sobrerinterpretar promedios pequeños.
+
+## 59.3 Comparación de plataforma
+
+[RESULTADO] CPU y GPU cambian el orden de eficiencia:
+
+- CPU: LSTM es la más rápida;
+- GPU: TCN es la más rápida.
+
+[INTERPRETACIÓN] La arquitectura óptima no depende únicamente del efecto modelado y de la métrica de fidelidad. También depende del hardware de inferencia.
+
+[DOCUMENTO] Conclusión preliminar central:
+
+**No existe una arquitectura universalmente superior bajo todas las dimensiones evaluadas. El compromiso entre fidelidad y eficiencia depende del efecto, de la métrica usada para representar fidelidad y de la plataforma de ejecución.**
+
+---
+
+# 60. Estado consolidado del proyecto — 2026-11-05
+
+Estado verificable en el repositorio:
+
+- Starcaster procesado/alineado: 25/50/75/100;
+- Dyna Comp procesado/alineado: 25/50/75/100;
+- CNN scratch: **8/8**;
+- LSTM scratch: **8/8**;
+- TCN scratch: **8/8**;
+- matriz principal: **24/24**;
+- fine-tuning complementario: 4 runs;
+- manifest canónico: **28 runs**;
+- evaluación común: **28/28, 0 missing/error**;
+- ESR histórico reproducido dentro de tolerancia;
+- métricas finales comunes: ESR, MAE, MR-STFT y error LUFS;
+- benchmark de eficiencia final completado en RTX 3060;
+- parámetros, tamaño, CPU/GPU RTF, throughput y memoria CUDA documentados;
+- figuras por arquitectura/setting actualizadas;
+- figuras fidelidad vs eficiencia generadas y versionadas;
+- análisis preliminar del trade-off ya disponible.
+
+Prioridades siguientes:
+
+1. convertir el análisis de fidelidad vs eficiencia en texto formal para el documento final;
+2. preparar una explicación/justificación clara de cada métrica para la próxima reunión con la asesora;
+3. definir con precisión la prueba adicional sobre material no visto / generalización;
+4. diseñar, si se mantiene, el protocolo de evaluación perceptual online y revisar implicaciones éticas/consentimiento;
+5. incorporar los templates de documento final y póster enviados por la asesora;
+6. revisar si hace falta una métrica adicional específica de envolvente/dinámica para compresión;
+7. comenzar a estructurar resultados, discusión, limitaciones y conclusiones a partir de los registros ya versionados.
+
+---
+
+**FIN DEL ESTADO ACTUALIZADO DOCUMENTALMENTE AL 2026-11-05.**
