@@ -240,15 +240,17 @@ def plot_tradeoff(
     ax.set_xlabel(
         f"Real-time factor (RTF) on {device_label(device)}"
     )
-    ax.set_ylabel(f"Mean {METRICS[metric]} across pedal settings")
+    ax.set_ylabel(
+        f"Mean {METRICS[metric]} across settings (range: min-max)"
+    )
     ax.set_title(
         f"{effect_label(effect)}: fidelity vs {device_label(device)} cost"
     )
     ax.grid(True, alpha=0.25)
 
     ax.text(
-        0.02,
-        0.02,
+        0.03,
+        0.04,
         "Lower-left is better\n(error ↓, RTF ↓)",
         transform=ax.transAxes,
         fontsize=9,
