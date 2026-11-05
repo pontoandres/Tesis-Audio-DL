@@ -22,6 +22,11 @@ Reported metrics:
 - real-time speed multiplier (1 / RTF);
 - CUDA peak allocated/reserved memory when benchmarking on GPU.
 
+Inference is streamed in fixed output blocks. The LSTM preserves recurrent
+state between blocks, while CNN/TCN are supplied with the causal left context
+required for each block. This avoids unsupported very-long cuDNN sequences and
+matches the chunked inference strategy already validated during thesis testing.
+
 The default CPU benchmark uses one PyTorch compute thread to better represent
 a real-time audio processing thread and to improve reproducibility.
 """
@@ -92,6 +97,15 @@ def parse_args() -> argparse.Namespace:
         "--sample-rate",
         type=int,
         default=44100,
+    )
+    parser.add_argument(
+        "--chunk-size",
+        type=int,
+        default=20000,
+        help=(
+            "Output samples processed per streaming block. "
+            "20000 matches the validated LSTM/TCN evaluation chunk size."
+        ),
     )
     parser.add_argument(
         "--warmup",
@@ -217,53 +231,44 @@ def reset_runtime_state(model: torch.nn.Module) -> None:
         reset()
 
 
-def model_input(
-    architecture: str,
-    model: torch.nn.Module,
+def synthetic_signal(
     audio_samples: int,
     device: torch.device,
     seed: int,
 ) -> torch.Tensor:
     generator = torch.Generator(device="cpu")
     generator.manual_seed(seed)
-
-    if architecture == "TCN":
-        context = int(model.receptive_field) - 1
-        input_samples = audio_samples + context
-        x = 0.1 * torch.randn(
-            1,
-            1,
-            input_samples,
-            generator=generator,
-            dtype=torch.float32,
-        )
-    else:
-        x = 0.1 * torch.randn(
-            audio_samples,
-            1,
-            1,
-            generator=generator,
-            dtype=torch.float32,
-        )
-
+    x = 0.1 * torch.randn(
+        audio_samples,
+        generator=generator,
+        dtype=torch.float32,
+    )
     return x.to(device)
 
 
-def validate_output_length(
-    architecture: str,
-    output: torch.Tensor,
-    expected_samples: int,
-) -> None:
-    if architecture == "TCN":
-        actual = int(output.shape[-1])
-    else:
-        actual = int(output.shape[0])
+def cnn_receptive_field(model: torch.nn.Module) -> int:
+    blocks = len(model.blocks) - 1
+    dilation_sum = sum(
+        model.dilation_growth ** layer
+        for layer in range(model.layers)
+    )
+    return (
+        1
+        + blocks
+        * (model.kernel_size - 1)
+        * dilation_sum
+    )
 
-    if actual != expected_samples:
-        raise RuntimeError(
-            f"{architecture} output length mismatch: "
-            f"{actual} != {expected_samples}"
-        )
+
+def architecture_context(
+    architecture: str,
+    model: torch.nn.Module,
+) -> int:
+    if architecture == "CNN":
+        return cnn_receptive_field(model) - 1
+    if architecture == "TCN":
+        return int(model.receptive_field) - 1
+    return 0
 
 
 def sync(device: torch.device) -> None:
@@ -271,17 +276,106 @@ def sync(device: torch.device) -> None:
         torch.cuda.synchronize(device)
 
 
-def one_forward(
+def make_context_chunk(
+    signal: torch.Tensor,
+    start: int,
+    end: int,
+    context: int,
+) -> torch.Tensor:
+    left = start - context
+
+    if left >= 0:
+        return signal[left:end]
+
+    pad = torch.zeros(
+        -left,
+        dtype=signal.dtype,
+        device=signal.device,
+    )
+    return torch.cat((pad, signal[:end]), dim=0)
+
+
+def infer_stream(
     architecture: str,
     model: torch.nn.Module,
-    x: torch.Tensor,
-    expected_samples: int,
-) -> torch.Tensor:
+    signal: torch.Tensor,
+    chunk_size: int,
+) -> int:
+    """Process a complete mono signal using the validated streaming strategy."""
+    total_samples = int(signal.numel())
+    context = architecture_context(architecture, model)
+    produced = 0
+
     reset_runtime_state(model)
+
     with torch.inference_mode():
-        output = model(x)
-    validate_output_length(architecture, output, expected_samples)
-    return output
+        for start in range(0, total_samples, chunk_size):
+            end = min(start + chunk_size, total_samples)
+            expected = end - start
+
+            if architecture == "LSTM":
+                chunk = (
+                    signal[start:end]
+                    .view(-1, 1, 1)
+                    .contiguous()
+                )
+                output = model(chunk)
+                actual = int(output.shape[0])
+
+            elif architecture == "CNN":
+                input_chunk = make_context_chunk(
+                    signal,
+                    start,
+                    end,
+                    context,
+                )
+                x = (
+                    input_chunk
+                    .view(-1, 1, 1)
+                    .contiguous()
+                )
+                full_output = model(x)
+                output = full_output[-expected:]
+                actual = int(output.shape[0])
+
+            elif architecture == "TCN":
+                input_chunk = make_context_chunk(
+                    signal,
+                    start,
+                    end,
+                    context,
+                )
+                x = (
+                    input_chunk
+                    .view(1, 1, -1)
+                    .contiguous()
+                )
+                output = model(x)
+                actual = int(output.shape[-1])
+
+            else:
+                raise ValueError(
+                    f"Unsupported architecture: {architecture}"
+                )
+
+            if actual != expected:
+                raise RuntimeError(
+                    f"{architecture} output length mismatch in block "
+                    f"{start}:{end}: {actual} != {expected}"
+                )
+
+            produced += actual
+            del output
+
+    reset_runtime_state(model)
+
+    if produced != total_samples:
+        raise RuntimeError(
+            f"{architecture} produced {produced} samples, "
+            f"expected {total_samples}"
+        )
+
+    return produced
 
 
 def benchmark_one(
@@ -290,6 +384,7 @@ def benchmark_one(
     device: torch.device,
     audio_seconds: float,
     sample_rate: int,
+    chunk_size: int,
     warmup: int,
     repeats: int,
     seed: int,
@@ -298,27 +393,26 @@ def benchmark_one(
     model.eval()
 
     audio_samples = int(round(audio_seconds * sample_rate))
-    x = model_input(
-        architecture,
-        model,
+    signal = synthetic_signal(
         audio_samples,
         device,
         seed,
     )
+
+    context = architecture_context(architecture, model)
 
     # CoreAudioML's GatedConvNet dynamically creates tensors without an
     # explicit device. torch.device(...) makes those allocations follow the
     # benchmark device without modifying the external submodule.
     with torch.device(device):
         for _ in range(warmup):
-            output = one_forward(
+            infer_stream(
                 architecture,
                 model,
-                x,
-                audio_samples,
+                signal,
+                chunk_size,
             )
             sync(device)
-            del output
 
         if device.type == "cuda":
             torch.cuda.empty_cache()
@@ -332,20 +426,17 @@ def benchmark_one(
 
         times = []
         for _ in range(repeats):
-            reset_runtime_state(model)
             sync(device)
-            start = time.perf_counter()
-            with torch.inference_mode():
-                output = model(x)
-            sync(device)
-            elapsed = time.perf_counter() - start
-            validate_output_length(
+            start_time = time.perf_counter()
+            infer_stream(
                 architecture,
-                output,
-                audio_samples,
+                model,
+                signal,
+                chunk_size,
             )
+            sync(device)
+            elapsed = time.perf_counter() - start_time
             times.append(float(elapsed))
-            del output
 
         if device.type == "cuda":
             peak_allocated = torch.cuda.max_memory_allocated(device)
@@ -365,6 +456,8 @@ def benchmark_one(
         "sample_rate_hz": sample_rate,
         "audio_seconds": audio_seconds,
         "audio_samples": audio_samples,
+        "chunk_size_samples": chunk_size,
+        "context_samples": context,
         "warmup_iterations": warmup,
         "timed_repetitions": repeats,
         "trainable_parameters": count_trainable_parameters(model),
@@ -392,15 +485,13 @@ def benchmark_one(
         ),
     }
 
-    # Move back to CPU before the next architecture/device.
     reset_runtime_state(model)
     model.to("cpu")
-    del x
+    del signal
     if device.type == "cuda":
         torch.cuda.empty_cache()
 
     return result
-
 
 def hardware_metadata(args: argparse.Namespace) -> dict:
     cuda_available = torch.cuda.is_available()
@@ -473,6 +564,16 @@ def write_markdown(payload: dict, path: Path) -> None:
             f"- Signal: deterministic synthetic mono float32, "
             f"{payload['protocol']['audio_seconds']} s at "
             f"{payload['protocol']['sample_rate_hz']} Hz."
+        ),
+        (
+            f"- Streaming block: "
+            f"{payload['protocol']['chunk_size_samples']} output samples "
+            f"(~{1000 * payload['protocol']['chunk_size_samples'] / payload['protocol']['sample_rate_hz']:.1f} ms)."
+        ),
+        (
+            "- LSTM preserves recurrent hidden state between blocks; "
+            "CNN and TCN receive the causal left context required to "
+            "produce each output block."
         ),
         (
             f"- Warm-up: {payload['protocol']['warmup_iterations']} "
@@ -579,6 +680,8 @@ def main() -> None:
         raise ValueError("--repeats must be >= 1")
     if args.cpu_threads < 1:
         raise ValueError("--cpu-threads must be >= 1")
+    if args.chunk_size < 1:
+        raise ValueError("--chunk-size must be >= 1")
 
     torch.set_num_threads(args.cpu_threads)
     try:
@@ -605,6 +708,7 @@ def main() -> None:
     protocol = {
         "audio_seconds": args.seconds,
         "sample_rate_hz": args.sample_rate,
+        "chunk_size_samples": args.chunk_size,
         "warmup_iterations": args.warmup,
         "timed_repetitions": args.repeats,
         "seed": args.seed,
@@ -620,6 +724,7 @@ def main() -> None:
     print("=" * 80)
     print(f"Audio duration : {args.seconds:.3f} s")
     print(f"Sample rate    : {args.sample_rate} Hz")
+    print(f"Chunk size     : {args.chunk_size} samples")
     print(f"Warm-up        : {args.warmup}")
     print(f"Repeats        : {args.repeats}")
     print(f"CPU threads    : {args.cpu_threads}")
@@ -639,6 +744,7 @@ def main() -> None:
                 device=device,
                 audio_seconds=args.seconds,
                 sample_rate=args.sample_rate,
+                chunk_size=args.chunk_size,
                 warmup=args.warmup,
                 repeats=args.repeats,
                 seed=args.seed,
