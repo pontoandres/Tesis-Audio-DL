@@ -12,9 +12,11 @@ results/efficiency/benchmark_efficiency.csv
 
 The core fidelity-vs-efficiency figures use only the 24 scratch/core runs.
 For each pedal and architecture, fidelity is summarized across the four
-settings (25/50/75/100) with the mean as the point and one standard deviation
-as a vertical error bar. Computational cost is architecture-level and therefore
-comes from the common efficiency benchmark.
+settings (25/50/75/100) with the mean as the point and the observed minimum-
+to-maximum range as a vertical error bar. These settings are distinct operating
+conditions rather than statistical replicates, so the range is used only as a
+descriptive indication of setting dependence. Computational cost is
+architecture-level and therefore comes from the common efficiency benchmark.
 
 Lower is better for both axes in the trade-off plots. The lower-left region is
 therefore preferable, but no single scalar "overall score" is constructed:
@@ -211,13 +213,16 @@ def plot_tradeoff(
 
     for arch in ARCH_ORDER:
         x = efficiency[(device, arch)]["rtf"]
-        y = fidelity[(effect, arch)][metric]["mean"]
-        y_std = fidelity[(effect, arch)][metric]["std"]
+        stats = fidelity[(effect, arch)][metric]
+        y = stats["mean"]
+        yerr = np.array(
+            [[y - stats["min"]], [stats["max"] - y]]
+        )
 
         ax.errorbar(
             x,
             y,
-            yerr=y_std,
+            yerr=yerr,
             fmt="o",
             markersize=8,
             capsize=4,
@@ -388,12 +393,20 @@ def write_summary_csv(
         "architecture",
         "esr_mean",
         "esr_std",
+        "esr_min",
+        "esr_max",
         "mae_mean",
         "mae_std",
+        "mae_min",
+        "mae_max",
         "mrstft_mean",
         "mrstft_std",
+        "mrstft_min",
+        "mrstft_max",
         "lufs_error_mean",
         "lufs_error_std",
+        "lufs_error_min",
+        "lufs_error_max",
         "parameters",
         "state_size_mb",
         "cpu_rtf",
@@ -415,12 +428,20 @@ def write_summary_csv(
                         "architecture": arch,
                         "esr_mean": fidelity[(effect, arch)]["esr"]["mean"],
                         "esr_std": fidelity[(effect, arch)]["esr"]["std"],
+                        "esr_min": fidelity[(effect, arch)]["esr"]["min"],
+                        "esr_max": fidelity[(effect, arch)]["esr"]["max"],
                         "mae_mean": fidelity[(effect, arch)]["mae"]["mean"],
                         "mae_std": fidelity[(effect, arch)]["mae"]["std"],
+                        "mae_min": fidelity[(effect, arch)]["mae"]["min"],
+                        "mae_max": fidelity[(effect, arch)]["mae"]["max"],
                         "mrstft_mean": fidelity[(effect, arch)]["mrstft"]["mean"],
                         "mrstft_std": fidelity[(effect, arch)]["mrstft"]["std"],
+                        "mrstft_min": fidelity[(effect, arch)]["mrstft"]["min"],
+                        "mrstft_max": fidelity[(effect, arch)]["mrstft"]["max"],
                         "lufs_error_mean": fidelity[(effect, arch)]["lufs_error"]["mean"],
                         "lufs_error_std": fidelity[(effect, arch)]["lufs_error"]["std"],
+                        "lufs_error_min": fidelity[(effect, arch)]["lufs_error"]["min"],
+                        "lufs_error_max": fidelity[(effect, arch)]["lufs_error"]["max"],
                         "parameters": efficiency[("cpu", arch)]["parameters"],
                         "state_size_mb": efficiency[("cpu", arch)]["state_size_mb"],
                         "cpu_rtf": efficiency[("cpu", arch)]["rtf"],
