@@ -5,7 +5,7 @@
 
 Este repositorio contiene el código, los experimentos, los resultados y la documentación técnica del proyecto de grado. El objetivo es comparar arquitecturas **CNN, LSTM y TCN** para aproximar mediante aprendizaje profundo el comportamiento de pedales físicos de guitarra, evaluando tanto la **fidelidad de la señal** como la **eficiencia computacional**.
 
-> **Estado del repositorio: 2026-11-03.** La matriz principal está completa: 8 CNN scratch + 8 LSTM scratch + 8 TCN scratch = **24/24 modelos core**. El manifest contiene además 4 experimentos complementarios de transferencia a 50%, para un total de **28 runs canónicos**, todos evaluados con el pipeline común sin faltantes ni errores.
+> **Estado del repositorio: 2026-11-05.** La matriz principal está completa: 8 CNN scratch + 8 LSTM scratch + 8 TCN scratch = **24/24 modelos core**. El manifest contiene además 4 experimentos complementarios de transferencia a 50%, para un total de **28 runs canónicos**, todos evaluados con el pipeline común sin faltantes ni errores. El benchmark de eficiencia CPU/GPU y las figuras de fidelidad frente a eficiencia también están completos.
 
 ---
 
@@ -137,6 +137,12 @@ Tesis-Audio-DL/
 
 ## 5. Documentación principal
 
+### Borrador de tesis
+
+[docs/borrador_tesis.md](docs/borrador_tesis.md)
+
+Primer borrador integral del documento de proyecto de grado. Reúne el estado actual de metodología, resultados, eficiencia, discusión, limitaciones y conclusiones preliminares. Las secciones de evaluación cualitativa y generalización permanecen marcadas como pendientes hasta cerrar su diseño con la asesora.
+
 ### Diario técnico
 
 [docs/diario_tesis.md](docs/diario_tesis.md)
@@ -160,14 +166,16 @@ Métricas principales de fidelidad:
 
 También se calculan MSE y RMSE como métricas auxiliares.
 
-Métricas previstas de eficiencia:
+Métricas de eficiencia implementadas:
 
 - número de parámetros;
-- tamaño del modelo;
+- tamaño estandarizado del estado del modelo;
 - tiempo de inferencia;
 - Real-Time Factor (RTF);
-- memoria pico durante inferencia;
-- FLOPs/MACs, si pueden medirse de forma comparable.
+- múltiplo de tiempo real;
+- memoria CUDA pico durante inferencia.
+
+El benchmark final se ejecutó en CPU y RTX 3060 con una señal de 60 s, cinco warm-ups y veinte repeticiones.
 
 ### Registro automático de experimentos
 
@@ -431,7 +439,7 @@ Observaciones actuales:
 - La transferencia **Big Muff -> Starcaster** mejora principalmente validation/convergencia, pero las ganancias de test son pequeñas; en Dyna Comp no aparece una ventaja consistente.
 - El split de test presenta diferencias de nivel respecto a train/validation que deben considerarse al interpretar generalización.
 
-La matriz de fidelidad ya está completa; falta incorporar el benchmark de eficiencia y las evaluaciones adicionales antes de cerrar conclusiones finales.
+La matriz de fidelidad y el benchmark de eficiencia ya están completos. Falta incorporar las evaluaciones adicionales de generalización y percepción antes de cerrar conclusiones finales.
 
 ---
 
@@ -439,12 +447,12 @@ La matriz de fidelidad ya está completa; falta incorporar el benchmark de efici
 
 La prioridad inmediata es:
 
-1. generar figuras finales CNN vs. LSTM vs. TCN para ESR, MAE, MR-STFT y LUFS;
-2. ejecutar el benchmark común de eficiencia;
-3. analizar formalmente el compromiso fidelidad vs. costo computacional;
-4. concretar la evaluación adicional de generalización sugerida por la asesora;
-5. diseñar la evaluación perceptual/cualitativa con audios;
-6. comenzar la escritura del documento final y del póster usando los templates entregados por la asesora.
+1. revisar con la asesora el borrador actual de tesis y la justificación de las métricas;
+2. concretar la evaluación adicional de generalización sugerida por la asesora;
+3. diseñar la evaluación perceptual/cualitativa con audios;
+4. decidir si se añade una métrica específica de envolvente/dinámica para compresión;
+5. expandir resultados y discusión por setting;
+6. adaptar el documento y el póster a los templates finales entregados por la asesora.
 
 ---
 
