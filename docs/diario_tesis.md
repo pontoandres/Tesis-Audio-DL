@@ -5105,4 +5105,45 @@ Prioridades siguientes:
 
 ---
 
+---
+
+# 61. Inicio del borrador formal del documento de tesis — 2026-11-05
+
+[DOCUMENTO] Se inició el primer borrador integral del informe de proyecto de grado a partir de la propuesta original, el diario técnico y los resultados ya cerrados en el repositorio.
+
+[IMPLEMENTACIÓN] Se creó `docs/borrador_tesis.md` como fuente editable y versionable del documento. La intención es que este archivo permita continuar redactando y corrigiendo secciones directamente en GitHub antes de adaptar el contenido al template final de la asesora.
+
+[DOCUMENTO] El borrador actual incluye:
+
+- resumen provisional;
+- introducción, contexto, problema, pregunta de investigación, objetivos y alcance;
+- marco de referencia y trabajos relacionados;
+- metodología de adquisición, preparación, alineación, modelos, entrenamiento y evaluación;
+- estado de la matriz experimental;
+- resultados de fidelidad para Starcaster y Dyna Comp;
+- benchmark de eficiencia computacional;
+- análisis preliminar de fidelidad frente a eficiencia;
+- discusión;
+- limitaciones;
+- trabajo pendiente;
+- conclusiones preliminares;
+- bibliografía base.
+
+[DECISIÓN DE ESTILO] La redacción se mantendrá formal por tratarse de una tesis, pero se buscará conservar un estilo directo y natural consistente con la forma de escribir del estudiante. Se evitarán formulaciones excesivamente rebuscadas y el uso de guiones como recurso para marcar pausas dentro de las oraciones cuando una coma o una construcción más directa sea suficiente.
+
+[DECISIÓN] El documento no se presenta todavía como versión final. Las secciones de evaluación cualitativa/perceptual y generalización se mantienen marcadas explícitamente como pendientes. No se inventan participantes, escalas, fragmentos, protocolos de randomización ni resultados que todavía no hayan sido definidos o ejecutados.
+
+[RESULTADO] También se generó una versión Word de trabajo con tablas y figuras para revisión visual y eventual envío a la asesora. La versión Markdown queda como fuente principal para continuar los cambios en el repositorio mientras se define la adaptación al formato final institucional.
+
+[PRÓXIMO PASO] Revisar el contenido con la asesora y continuar expandiendo, en particular:
+
+1. justificación detallada de las métricas;
+2. diseño de la evaluación cualitativa;
+3. prueba adicional sobre material no visto;
+4. discusión de resultados por setting;
+5. adaptación al template final;
+6. consolidación de conclusiones finales.
+
+---
+
 **FIN DEL ESTADO ACTUALIZADO DOCUMENTALMENTE AL 2026-11-05.**
