@@ -5146,4 +5146,28 @@ Prioridades siguientes:
 
 ---
 
-**FIN DEL ESTADO ACTUALIZADO DOCUMENTALMENTE AL 2026-11-05.**
+---
+
+# 62. Índice provisional del borrador para revisión con la asesora — 2026-11-08
+
+[DOCUMENTO] A solicitud de la asesora se incorporó un índice provisional al comienzo del borrador de tesis para facilitar la revisión de la estructura y del contenido ya escrito.
+
+[IMPLEMENTACIÓN] Se actualizó `docs/borrador_tesis.md` con un índice que refleja las secciones y subsecciones actualmente desarrolladas:
+
+- introducción;
+- marco de referencia;
+- metodología;
+- resultados;
+- discusión;
+- limitaciones;
+- trabajo pendiente;
+- conclusiones preliminares;
+- referencias.
+
+[DOCUMENTO] También se generó una nueva versión Word del borrador con el índice después de la portada y números de página correspondientes al estado actual del documento.
+
+[CAUTELA] El índice sigue siendo provisional. Las secciones de evaluación cualitativa/perceptual y generalización continúan abiertas y podrán modificar la estructura y la paginación del documento antes de la entrega final.
+
+---
+
+**FIN DEL ESTADO ACTUALIZADO DOCUMENTALMENTE AL 2026-11-08.**
