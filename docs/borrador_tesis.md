@@ -9,6 +9,46 @@
 
 > Documento de trabajo para revisión. No corresponde todavía a la versión final del informe.
 
+## Índice provisional
+
+Este índice corresponde al estado actual del borrador y se seguirá ampliando a medida que se completen las evaluaciones pendientes.
+
+- **Resumen provisional**
+- **1. Introducción**
+  - 1.1 Contexto y motivación
+  - 1.2 Planteamiento del problema
+  - 1.3 Objetivos
+  - 1.4 Alcance
+- **2. Marco de referencia y trabajos relacionados**
+  - 2.1 Modelado black-box de sistemas de audio
+  - 2.2 Modelado de compresión
+  - 2.3 Arquitecturas consideradas
+- **3. Metodología**
+  - 3.1 Diseño experimental
+  - 3.2 Cadena de adquisición
+  - 3.3 Preparación y alineación del conjunto de datos
+  - 3.4 Modelos
+  - 3.5 Entrenamiento y selección de checkpoints
+  - 3.6 Evaluación de fidelidad
+  - 3.7 Benchmark de eficiencia
+  - 3.8 Evaluación cualitativa y generalización
+- **4. Resultados**
+  - 4.1 Estado de la matriz experimental
+  - 4.2 Fidelidad en Starcaster Distortion
+  - 4.3 Fidelidad en MXR Dyna Comp
+  - 4.4 Comportamiento de validación en Dyna Comp
+  - 4.5 Eficiencia computacional
+  - 4.6 Compromiso entre fidelidad y eficiencia
+- **5. Discusión**
+  - 5.1 El efecto cambia la comparación
+  - 5.2 Parámetros y velocidad no significan lo mismo
+  - 5.3 Una sola métrica de fidelidad no es suficiente
+  - 5.4 Resultado preliminar frente a la pregunta de investigación
+- **6. Limitaciones**
+- **7. Trabajo pendiente para la siguiente revisión**
+- **8. Conclusiones preliminares**
+- **Referencias**
+
 ## Resumen provisional
 
 Este proyecto estudia el modelado black-box de dos efectos analógicos de guitarra eléctrica, un pedal Fender Starcaster Distortion y un compresor MXR Dyna Comp, mediante tres familias de arquitecturas de aprendizaje profundo: CNN, LSTM y TCN. Se construyó un conjunto de datos propio con pares de señales de entrada y salida para cuatro configuraciones de cada pedal, correspondientes a 25 %, 50 %, 75 % y 100 % del control principal. Los modelos fueron evaluados con un protocolo común que incluye Error-to-Signal Ratio (ESR), error absoluto medio (MAE), una métrica multi-resolución basada en STFT y error absoluto de loudness medido en LUFS. También se realizó un benchmark de eficiencia computacional en CPU y GPU, midiendo número de parámetros, tamaño del estado del modelo, tiempo de inferencia, factor de tiempo real y uso de memoria CUDA.
