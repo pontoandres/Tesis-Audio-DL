@@ -5,7 +5,7 @@
 
 Este repositorio contiene el código, los experimentos, los resultados y la documentación técnica del proyecto de grado. El objetivo es comparar arquitecturas **CNN, LSTM y TCN** para aproximar mediante aprendizaje profundo el comportamiento de pedales físicos de guitarra, evaluando tanto la **fidelidad de la señal** como la **eficiencia computacional**.
 
-> **Estado del repositorio: 2026-11-05.** La matriz principal está completa: 8 CNN scratch + 8 LSTM scratch + 8 TCN scratch = **24/24 modelos core**. El manifest contiene además 4 experimentos complementarios de transferencia a 50%, para un total de **28 runs canónicos**, todos evaluados con el pipeline común sin faltantes ni errores. El benchmark de eficiencia CPU/GPU y las figuras de fidelidad frente a eficiencia también están completos.
+> **Estado del repositorio: 2026-11-10.** La matriz principal está completa: 8 CNN scratch + 8 LSTM scratch + 8 TCN scratch = **24/24 modelos core**. El manifest contiene además 4 experimentos complementarios de transferencia a 50%, para un total de **28 runs canónicos**, todos evaluados con el pipeline común sin faltantes ni errores. El benchmark de eficiencia CPU/GPU y las figuras de fidelidad frente a eficiencia también están completos.
 
 ---
 
@@ -141,7 +141,7 @@ Tesis-Audio-DL/
 
 [docs/borrador_tesis.md](docs/borrador_tesis.md)
 
-Primer borrador integral del documento de proyecto de grado. Reúne el estado actual de metodología, resultados, eficiencia, discusión, limitaciones y conclusiones preliminares. Las secciones de evaluación cualitativa y generalización permanecen marcadas como pendientes hasta cerrar su diseño con la asesora.
+Borrador integral del documento de proyecto de grado, reorganizado según el template enviado por la asesora. Incluye introducción, contexto y problema, antecedentes, descripción y desarrollo de la solución, métodos de validación, resultados, discusión, trabajo futuro y un apéndice con los resultados completos por configuración. Las evaluaciones cualitativa y de generalización permanecen marcadas como pendientes.
 
 ### Diario técnico
 
@@ -447,12 +447,12 @@ La matriz de fidelidad y el benchmark de eficiencia ya están completos. Falta i
 
 La prioridad inmediata es:
 
-1. revisar con la asesora el borrador actual de tesis y la justificación de las métricas;
-2. concretar la evaluación adicional de generalización sugerida por la asesora;
-3. diseñar la evaluación perceptual/cualitativa con audios;
-4. decidir si se añade una métrica específica de envolvente/dinámica para compresión;
-5. expandir resultados y discusión por setting;
-6. adaptar el documento y el póster a los templates finales entregados por la asesora.
+1. realizar una lectura externa de claridad del borrador ya adaptado al template de la asesora;
+2. revisar el borrador con la asesora y aplicar sus correcciones;
+3. concretar la evaluación adicional de generalización;
+4. diseñar la evaluación perceptual/cualitativa con audios y consentimiento;
+5. decidir si se añade una métrica específica de envolvente/dinámica para compresión;
+6. preparar la versión final del documento y el póster.
 
 ---
 
