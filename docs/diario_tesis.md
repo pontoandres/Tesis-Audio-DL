@@ -5170,4 +5170,46 @@ Prioridades siguientes:
 
 ---
 
-**FIN DEL ESTADO ACTUALIZADO DOCUMENTALMENTE AL 2026-11-08.**
+---
+
+# 63. Adaptación del borrador al template de la asesora — 2026-11-10
+
+[DOCUMENTO] Se reorganizó por completo el borrador de tesis para seguir la estructura del template enviado por la profesora Haydemar.
+
+[ESTRUCTURA] El documento quedó organizado en:
+
+1. Introducción.
+2. Contexto y planteamiento del problema.
+3. Antecedentes.
+4. Descripción de la solución propuesta.
+5. Desarrollo de la solución.
+6. Análisis de resultados.
+7. Conclusiones.
+8. Referencias.
+9. Apéndice con resultados completos por configuración.
+
+[IMPLEMENTACIÓN] Se reemplazó la estructura anterior de introducción, metodología, resultados, discusión, limitaciones y trabajo pendiente por la estructura solicitada por la asesora. El contenido existente se reutilizó y se movió al capítulo correspondiente en lugar de duplicarlo.
+
+[DOCUMENTO] Se agregaron piezas que el template solicitaba de forma explícita y que no estaban separadas anteriormente:
+
+- propuesta de solución y justificación;
+- resultados esperados;
+- metodología propuesta separada de la implementación;
+- restricciones económicas, ambientales, sociales, éticas, legales, de salud, seguridad, políticas y de mantenimiento, indicando solamente las que aplican al proyecto;
+- explicación de las pruebas de validación y de la razón de cada métrica;
+- sección de fuentes de error e incertidumbre;
+- apéndice con los resultados de los 24 modelos principales por setting.
+
+[DECISIÓN] Las evaluaciones de generalización y percepción continúan marcadas como pendientes y no se presentan como resultados completados.
+
+[DECISIÓN] Los modelos condicionados por parámetros, por ejemplo mediante FiLM, se documentan como una posible extensión futura. No se agregan a la matriz experimental principal porque representarían un nuevo eje de comparación distinto al alcance actual.
+
+[FORMATO] Se generó una nueva versión Word con portada, índice con paginación real, tablas, figuras combinadas y apéndice. Después de reorganizar y ampliar el contenido, el documento quedó en 16 páginas, por debajo del límite máximo de 25 páginas indicado para la entrega.
+
+[CONTROL DE CALIDAD] La versión Word fue renderizada y revisada página por página. Se corrigió una numeración automática incorrecta en la lista de métricas y se ajustaron las figuras para mantener cada caption junto a su figura.
+
+[PRÓXIMO PASO] El borrador está listo para una lectura externa de claridad y posteriormente para revisión de la asesora. Antes de la versión final siguen pendientes la prueba de generalización, la evaluación perceptual y cualquier corrección solicitada por Haydemar.
+
+---
+
+**FIN DEL ESTADO ACTUALIZADO DOCUMENTALMENTE AL 2026-11-10.**
