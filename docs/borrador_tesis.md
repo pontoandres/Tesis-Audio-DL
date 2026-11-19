@@ -251,7 +251,7 @@ La generalización se evaluó mediante una grabación adicional de 218.22 s a 44
 
 Las nuevas parejas input/target se alinearon con el mismo criterio causal utilizado en el proyecto. El residual mediano quedó en 128 muestras para Starcaster y 131 muestras para Dyna Comp, valores cercanos al objetivo de 128 muestras. No se reentrenó ningún modelo ni se utilizaron estos audios para seleccionar checkpoints. Se ejecutaron únicamente los modelos CNN, LSTM y TCN ya congelados del setting 50 % y se calcularon ESR, MAE, MR-STFT y error LUFS mediante el evaluador común.
 
-La evaluación perceptual online permanece pendiente. Esta actividad se diseñará con ejemplos anonimizados del target real y las predicciones, indicaciones de escucha a volumen cómodo y una escala de similitud definida antes de recoger respuestas. Sus resultados no se presentan todavía en este borrador.
+La evaluación perceptual online permanece pendiente de ejecución. El protocolo definido presenta explícitamente la señal limpia, la salida del pedal físico real y tres emulaciones computacionales identificadas como Modelos A, B y C. Los nombres de las arquitecturas se ocultan únicamente para evitar sesgo por etiquetas técnicas. Para cada emulación se recogerá una calificación de fidelidad de 1 a 5, categorías perceptuales de selección múltiple y un comentario abierto opcional. Sus resultados no se presentan todavía en este borrador.
 
 ## 6.2 Validación de resultados
 
