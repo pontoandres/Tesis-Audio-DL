@@ -5,7 +5,7 @@
 
 Este repositorio contiene el código, los experimentos, los resultados y la documentación técnica del proyecto de grado. El objetivo es comparar arquitecturas **CNN, LSTM y TCN** para aproximar mediante aprendizaje profundo el comportamiento de pedales físicos de guitarra, evaluando tanto la **fidelidad de la señal** como la **eficiencia computacional**.
 
-> **Estado del repositorio: 2026-11-10.** La matriz principal está completa: 8 CNN scratch + 8 LSTM scratch + 8 TCN scratch = **24/24 modelos core**. El manifest contiene además 4 experimentos complementarios de transferencia a 50%, para un total de **28 runs canónicos**, todos evaluados con el pipeline común sin faltantes ni errores. El benchmark de eficiencia CPU/GPU y las figuras de fidelidad frente a eficiencia también están completos.
+> **Estado del repositorio: 2026-11-19.** La matriz principal está completa: 8 CNN scratch + 8 LSTM scratch + 8 TCN scratch = **24/24 modelos core**. El manifest contiene además 4 experimentos complementarios de transferencia a 50%, para un total de **28 runs canónicos**, todos evaluados con el pipeline común sin faltantes ni errores. El benchmark de eficiencia CPU/GPU, las figuras de fidelidad frente a eficiencia y la prueba adicional de generalización con material no visto a 50 % también están completos.
 
 ---
 
@@ -141,7 +141,7 @@ Tesis-Audio-DL/
 
 [docs/borrador_tesis.md](docs/borrador_tesis.md)
 
-Borrador integral del documento de proyecto de grado, reorganizado según el template enviado por la asesora. Incluye introducción, contexto y problema, antecedentes, descripción y desarrollo de la solución, métodos de validación, resultados, discusión, trabajo futuro y un apéndice con los resultados completos por configuración. Las evaluaciones cualitativa y de generalización permanecen marcadas como pendientes.
+Borrador integral del documento de proyecto de grado, reorganizado según el template enviado por la asesora. Incluye introducción, contexto y problema, antecedentes, descripción y desarrollo de la solución, métodos de validación, resultados, discusión, trabajo futuro y un apéndice con los resultados completos por configuración. La prueba adicional de generalización ya está incorporada. La evaluación perceptual/cualitativa permanece pendiente.
 
 ### Diario técnico
 
@@ -438,8 +438,9 @@ Observaciones actuales:
 - ESR, MAE, MR-STFT y LUFS ordenan los modelos de manera distinta, lo que justifica una evaluación multidimensional.
 - La transferencia **Big Muff -> Starcaster** mejora principalmente validation/convergencia, pero las ganancias de test son pequeñas; en Dyna Comp no aparece una ventaja consistente.
 - El split de test presenta diferencias de nivel respecto a train/validation que deben considerarse al interpretar generalización.
+- En la prueba externa a 50 %, Starcaster conserva errores bajos y CNN/TCN se reparten las mejores métricas. En Dyna Comp las tres arquitecturas degradan frente al test original y presentan una diferencia de loudness importante, lo que evidencia una generalización más sensible del compresor bajo ese material.
 
-La matriz de fidelidad y el benchmark de eficiencia ya están completos. Falta incorporar las evaluaciones adicionales de generalización y percepción antes de cerrar conclusiones finales.
+La matriz de fidelidad, el benchmark de eficiencia y la prueba adicional de generalización ya están completos. Falta ejecutar la evaluación perceptual antes de cerrar conclusiones finales.
 
 ---
 
@@ -447,12 +448,13 @@ La matriz de fidelidad y el benchmark de eficiencia ya están completos. Falta i
 
 La prioridad inmediata es:
 
-1. realizar una lectura externa de claridad del borrador ya adaptado al template de la asesora;
-2. revisar el borrador con la asesora y aplicar sus correcciones;
-3. concretar la evaluación adicional de generalización;
-4. diseñar la evaluación perceptual/cualitativa con audios y consentimiento;
-5. decidir si se añade una métrica específica de envolvente/dinámica para compresión;
-6. preparar la versión final del documento y el póster.
+1. diseñar y ejecutar la evaluación perceptual/cualitativa con audios anonimizados y consentimiento;
+2. incorporar sus resultados al documento;
+3. realizar una lectura final de claridad del borrador y revisar con la asesora;
+4. aplicar las correcciones solicitadas;
+5. preparar la versión final del documento y el póster.
+
+La prueba adicional de generalización ya está cerrada. No se añadirá una nueva métrica específica de envolvente/dinámica salvo solicitud explícita de la asesora.
 
 ---
 
