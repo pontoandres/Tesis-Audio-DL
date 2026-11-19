@@ -17,19 +17,30 @@ SAMPLE_RATE = 44100
 
 
 def to_float_mono(x: np.ndarray, name: str) -> np.ndarray:
-    if x.ndim == 2:
-        if x.shape[1] == 1:
-            x = x[:, 0]
-        else:
-            print(f"[INFO] {name}: {x.shape[1]} channels -> mono by channel mean")
-            x = np.mean(x.astype(np.float64), axis=1)
+    """
+    Convert PCM/float audio to normalized float64 first, then downmix.
+
+    The conversion order matters: averaging integer PCM channels first turns
+    the array into floating point while still retaining PCM-scale values,
+    which would later be mistaken for already-normalized audio.
+    """
     if x.dtype == np.int16:
-        return np.ascontiguousarray(x.astype(np.float64) / 32768.0)
-    if x.dtype == np.int32:
-        return np.ascontiguousarray(x.astype(np.float64) / 2147483648.0)
-    if np.issubdtype(x.dtype, np.floating):
-        return np.ascontiguousarray(x.astype(np.float64))
-    raise TypeError(f"Unsupported dtype for {name}: {x.dtype}")
+        y = x.astype(np.float64) / 32768.0
+    elif x.dtype == np.int32:
+        y = x.astype(np.float64) / 2147483648.0
+    elif np.issubdtype(x.dtype, np.floating):
+        y = x.astype(np.float64)
+    else:
+        raise TypeError(f"Unsupported dtype for {name}: {x.dtype}")
+
+    if y.ndim == 2:
+        if y.shape[1] == 1:
+            y = y[:, 0]
+        else:
+            print(f"[INFO] {name}: {y.shape[1]} channels -> mono by channel mean")
+            y = np.mean(y, axis=1)
+
+    return np.ascontiguousarray(y)
 
 
 def to_int16(x: np.ndarray) -> np.ndarray:
