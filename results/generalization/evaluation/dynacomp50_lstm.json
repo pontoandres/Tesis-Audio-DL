@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-11-19T06:36:13.095764+00:00",
+  "experiment": {
+    "effect": "dynacomp",
+    "setting": 50,
+    "architecture": "LSTM",
+    "run_name": "generalization_dynacomp50_lstm",
+    "checkpoint": "model_best.json"
+  },
+  "files": {
+    "target": "C:\\Users\\pontomoreno\\Documents\\Tesis-Audio-DL\\data\\generalization\\processed\\dynacomp\\50\\test\\generalization50-target.wav",
+    "prediction": "C:\\Users\\pontomoreno\\Documents\\Tesis-Audio-DL\\results\\generalization\\dynacomp50_lstm_prediction.wav"
+  },
+  "audio": {
+    "sample_rate_hz": 44100,
+    "evaluated_samples": 9623472,
+    "audio_seconds": 218.21931972789116,
+    "target_original_samples": 9623472,
+    "prediction_original_samples": 9623472,
+    "target_dtype": "int16",
+    "prediction_dtype": "float32",
+    "length_policy": "strict",
+    "amplitude_normalization": false,
+    "resampling": false
+  },
+  "metrics": {
+    "esr": 1.048533647128143,
+    "mae": 0.036067759311440004,
+    "mse": 0.00244218656261867,
+    "rmse": 0.049418484017811286,
+    "target_mean_square": 0.0023191446767661106,
+    "mrstft": 2.1231747468312583,
+    "mrstft_spectral_convergence": 0.876185417175293,
+    "mrstft_log_magnitude_l1": 1.246989409128825,
+    "mrstft_resolutions": [
+      {
+        "n_fft": 512,
+        "hop_length": 128,
+        "spectral_convergence": 0.8829290270805359,
+        "log_magnitude_l1": 1.2415326833724976,
+        "combined": 2.1244616508483887
+      },
+      {
+        "n_fft": 2048,
+        "hop_length": 512,
+        "spectral_convergence": 0.8732794523239136,
+        "log_magnitude_l1": 1.2507879734039307,
+        "combined": 2.1240673065185547
+      },
+      {
+        "n_fft": 8192,
+        "hop_length": 2048,
+        "spectral_convergence": 0.8723477721214294,
+        "log_magnitude_l1": 1.2486475706100464,
+        "combined": 2.120995283126831
+      }
+    ],
+    "loudness": {
+      "available": true,
+      "standard": "ITU-R BS.1770 (via pyloudnorm)",
+      "target_lufs": -26.628889036210193,
+      "prediction_lufs": -41.39725753321052,
+      "lufs_absolute_error": 14.768368497000328
+    }
+  },
+  "metric_configuration": {
+    "esr_epsilon": 1e-05,
+    "mrstft_fft_sizes": [
+      512,
+      2048,
+      8192
+    ],
+    "mrstft_hop_sizes": [
+      128,
+      512,
+      2048
+    ],
+    "mrstft_window": "Hann",
+    "mrstft_center": true,
+    "mrstft_combination": "mean_over_resolutions(spectral_convergence + log_magnitude_L1)"
+  }
+}

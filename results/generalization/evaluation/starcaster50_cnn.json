@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-11-19T06:35:40.489112+00:00",
+  "experiment": {
+    "effect": "starcaster",
+    "setting": 50,
+    "architecture": "CNN",
+    "run_name": "generalization_starcaster50_cnn",
+    "checkpoint": "model_best.json"
+  },
+  "files": {
+    "target": "C:\\Users\\pontomoreno\\Documents\\Tesis-Audio-DL\\data\\generalization\\processed\\starcaster\\50\\test\\generalization50-target.wav",
+    "prediction": "C:\\Users\\pontomoreno\\Documents\\Tesis-Audio-DL\\results\\generalization\\starcaster50_cnn_prediction.wav"
+  },
+  "audio": {
+    "sample_rate_hz": 44100,
+    "evaluated_samples": 9623452,
+    "audio_seconds": 218.21886621315193,
+    "target_original_samples": 9623452,
+    "prediction_original_samples": 9623452,
+    "target_dtype": "int16",
+    "prediction_dtype": "float32",
+    "length_policy": "strict",
+    "amplitude_normalization": false,
+    "resampling": false
+  },
+  "metrics": {
+    "esr": 0.08817356369510708,
+    "mae": 0.013745826887805717,
+    "mse": 0.0005125237082444063,
+    "rmse": 0.02263898646681,
+    "target_mean_square": 0.005802668636334672,
+    "mrstft": 1.5342113176981609,
+    "mrstft_spectral_convergence": 0.21221762398878732,
+    "mrstft_log_magnitude_l1": 1.3219937086105347,
+    "mrstft_resolutions": [
+      {
+        "n_fft": 512,
+        "hop_length": 128,
+        "spectral_convergence": 0.2140604853630066,
+        "log_magnitude_l1": 1.3596395254135132,
+        "combined": 1.573699951171875
+      },
+      {
+        "n_fft": 2048,
+        "hop_length": 512,
+        "spectral_convergence": 0.2115001082420349,
+        "log_magnitude_l1": 1.327864170074463,
+        "combined": 1.5393643379211426
+      },
+      {
+        "n_fft": 8192,
+        "hop_length": 2048,
+        "spectral_convergence": 0.2110922783613205,
+        "log_magnitude_l1": 1.278477430343628,
+        "combined": 1.4895696640014648
+      }
+    ],
+    "loudness": {
+      "available": true,
+      "standard": "ITU-R BS.1770 (via pyloudnorm)",
+      "target_lufs": -22.39733035308546,
+      "prediction_lufs": -23.648913526325988,
+      "lufs_absolute_error": 1.251583173240526
+    }
+  },
+  "metric_configuration": {
+    "esr_epsilon": 1e-05,
+    "mrstft_fft_sizes": [
+      512,
+      2048,
+      8192
+    ],
+    "mrstft_hop_sizes": [
+      128,
+      512,
+      2048
+    ],
+    "mrstft_window": "Hann",
+    "mrstft_center": true,
+    "mrstft_combination": "mean_over_resolutions(spectral_convergence + log_magnitude_L1)"
+  }
+}
