@@ -1,6 +1,6 @@
 # Plan de ejecución experimental actualizado
 
-**Fecha:** 2026-11-03
+**Fecha:** 2026-11-19
 
 Este documento refleja el estado actual del proyecto después de completar la matriz CNN/LSTM/TCN y ejecutar el evaluador común sobre todos los experimentos canónicos.
 
@@ -144,14 +144,20 @@ Con fidelidad y eficiencia completas:
 
 ### 4. Evaluación adicional de generalización
 
-En reunión con la asesora se sugirió explorar una evaluación adicional usando material que represente claramente señal no vista durante entrenamiento.
+Estado: ✓ **completada**.
 
-El diseño exacto todavía está pendiente. Antes de implementarlo se debe precisar:
+Se grabó una nueva interpretación dry de 218.22 s que no pertenecía a train, validation ni test del dataset original. La interpretación se pasó físicamente por ambos pedales al 50 % y se evaluaron los checkpoints ya congelados de CNN, LSTM y TCN.
 
-- qué audio constituye el conjunto adicional;
-- si se trata de un nuevo test externo o una extensión del test actual;
-- qué métricas se aplicarían;
-- cómo evitar utilizar ese conjunto para selección de modelos.
+Criterios:
+
+- 44.1 kHz;
+- misma convención de alineación causal;
+- residual mediano de 128 muestras para Starcaster y 131 para Dyna Comp;
+- Dyna Comp conserva el ajuste fijo de +6 dB del target;
+- ningún modelo se reentrenó ni se seleccionó con el nuevo material;
+- métricas: ESR, MAE, MR-STFT y error LUFS.
+
+Los resultados están versionados en `results/generalization/`. Starcaster mantiene errores bajos sobre el material externo. Dyna Comp presenta una degradación más marcada, especialmente en loudness, cuya causa exacta no se atribuye sin un experimento adicional controlado.
 
 ### 5. Evaluación perceptual/cualitativa
 
@@ -196,8 +202,8 @@ A partir de este punto:
 
 ## Prioridad inmediata
 
-1. generar figuras CNN/LSTM/TCN;
-2. revisar y documentar los resultados;
-3. implementar benchmark de eficiencia;
-4. comenzar escritura del documento y póster en paralelo;
-5. concretar con la asesora la evaluación adicional de generalización y la encuesta perceptual.
+1. diseñar y ejecutar la evaluación perceptual online;
+2. incorporar al documento los resultados de generalización ya cerrados;
+3. incorporar los resultados perceptuales cuando estén disponibles;
+4. hacer revisión final de conclusiones, limitaciones y formato;
+5. preparar la versión final del documento y el póster.
