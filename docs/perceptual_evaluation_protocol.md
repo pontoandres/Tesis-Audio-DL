@@ -5,38 +5,47 @@
 
 ## Objetivo
 
-Complementar las métricas objetivas con una evaluación perceptual sencilla de similitud entre la salida real de cada pedal y las predicciones de CNN, LSTM y TCN.
+Complementar las métricas objetivas con una evaluación perceptual y cualitativa de qué tan fielmente las salidas generadas por CNN, LSTM y TCN reproducen el efecto del pedal físico.
 
-La prueba no busca medir preferencia musical. La pregunta central es qué tan similar se percibe cada emulación respecto a la salida real del dispositivo físico.
+La prueba no busca que los participantes identifiquen arquitecturas ni que sepan cómo funciona una red neuronal. Tampoco se plantea principalmente como una prueba de preferencia musical. El participante conoce cuál audio es la guitarra limpia, cuál proviene del pedal físico real y cuáles corresponden a emulaciones computacionales. Su tarea es comparar cada emulación con el pedal real y describir qué tan fiel le parece.
 
 ## Material de audio
 
 Se utilizará el mismo material externo empleado en la prueba adicional de generalización, correspondiente a una interpretación que no pertenecía a train, validation ni test del dataset original.
 
-Para cada efecto se preparará:
+Para cada efecto se prepararán cinco archivos:
 
-- una referencia producida por el pedal físico;
-- una predicción CNN;
-- una predicción LSTM;
-- una predicción TCN.
+1. guitarra limpia, sin pedal;
+2. salida del pedal físico real;
+3. emulación mediante Modelo A;
+4. emulación mediante Modelo B;
+5. emulación mediante Modelo C.
 
-Los cuatro archivos de cada efecto utilizarán exactamente el mismo intervalo temporal.
+Los cinco archivos utilizan exactamente el mismo intervalo temporal.
 
-El script `scripts/prepare_perceptual_eval.py` selecciona por defecto un fragmento de 15 s utilizando únicamente la señal dry. La selección automática favorece una ventana activa con variación dinámica y no inspecciona las predicciones para decidir el fragmento. Esto reduce el riesgo de escoger una región porque favorezca o perjudique a una arquitectura particular.
+El script `scripts/prepare_perceptual_eval.py` selecciona automáticamente un fragmento de 15 s utilizando únicamente la señal dry. La selección favorece una región activa con variación dinámica y no inspecciona el pedal real ni las predicciones para escoger el intervalo. Esto evita elegir un fragmento porque favorezca o perjudique a una arquitectura específica.
 
-## Anonimización
+El mismo intervalo se utiliza para Starcaster y Dyna Comp. El script realiza todos los recortes automáticamente, por lo que no se requiere edición manual de audio.
 
-Las arquitecturas se presentan como A, B y C. El mapeo se genera por separado para cada efecto mediante una semilla reproducible y se guarda únicamente en un archivo local `answer_key.json`.
+## Identificación de los audios
 
-El answer key no debe publicarse ni compartirse con los participantes antes de cerrar la recolección de respuestas.
+El participante conoce explícitamente:
+
+- cuál archivo es la señal limpia;
+- cuál archivo corresponde al pedal físico real;
+- cuáles archivos son emulaciones producidas mediante modelos de aprendizaje profundo.
+
+Las tres arquitecturas se presentan únicamente como Modelo A, Modelo B y Modelo C. El propósito de A/B/C no es pedir al participante que adivine la arquitectura. Se utiliza para evitar que términos técnicos como CNN, LSTM o TCN introduzcan expectativas innecesarias en la evaluación.
+
+El mapeo A/B/C se genera de forma reproducible y queda guardado localmente en `answer_key.json`.
 
 ## Nivel de audio
 
-No se aplica normalización independiente ni gain matching entre la referencia y las predicciones.
+No se aplica normalización independiente ni gain matching entre pedal real y predicciones.
 
-Esta decisión es intencional porque la correspondencia de nivel forma parte de la fidelidad evaluada en el proyecto y ya se mide cuantitativamente mediante error LUFS. Igualar el loudness de cada modelo eliminaría una diferencia real producida por la emulación.
+Esta decisión es intencional porque la reproducción correcta del nivel hace parte de la fidelidad estudiada y ya aparece en la evaluación cuantitativa mediante error LUFS. Corregir artificialmente el volumen antes de la escucha ocultaría una diferencia real del modelo.
 
-A los participantes se les indicará ajustar el volumen general de reproducción a un nivel cómodo antes de comenzar y evitar modificarlo entre archivos de un mismo bloque.
+Se indicará al participante ajustar el volumen general a un nivel cómodo antes de comenzar y mantenerlo estable durante cada bloque.
 
 ## Estructura del formulario
 
@@ -44,7 +53,7 @@ A los participantes se les indicará ajustar el volumen general de reproducción
 
 Texto propuesto:
 
-> Esta encuesta hace parte de una evaluación académica de modelos de audio para guitarra eléctrica. Escucharás fragmentos cortos producidos por un pedal real y por tres modelos computacionales. Tu tarea es calificar qué tan similares suenan las emulaciones respecto a la referencia. La participación es voluntaria y las respuestas se analizarán de forma agregada. No es necesario tener experiencia musical. Se recomienda usar audífonos o parlantes con los que puedas escuchar cómodamente y ajustar el volumen antes de comenzar.
+> Esta encuesta hace parte de una evaluación académica de modelos de audio para guitarra eléctrica. Escucharás primero una señal de guitarra limpia, después la salida producida por un pedal físico real y finalmente tres emulaciones computacionales del mismo efecto. Tu tarea es comparar cada emulación con el pedal real y evaluar qué tan fiel te parece. No necesitas conocer cómo funcionan los modelos. La participación es voluntaria y las respuestas se analizarán de forma agregada. Se recomienda utilizar audífonos o parlantes con los que puedas escuchar cómodamente y ajustar el volumen antes de comenzar.
 
 Pregunta obligatoria:
 
@@ -57,7 +66,7 @@ Si la respuesta es No, el formulario debe finalizar.
 
 ### Experiencia del participante
 
-Pregunta opcional:
+Pregunta opcional de selección única:
 
 **¿Cómo describirías tu experiencia con guitarra, producción musical o audio?**
 
@@ -66,63 +75,124 @@ Pregunta opcional:
 - Intermedia.
 - Avanzada o profesional.
 
-Esta variable solo se utilizará de forma descriptiva. No se debe forzar una comparación por grupos si el número de respuestas es pequeño.
+Esta variable se utilizará solo de forma descriptiva salvo que el número de participantes permita una comparación razonable entre grupos.
 
-## Bloque 1: Starcaster Distortion
+## Bloque 1. Fender Starcaster Distortion
 
-Presentar primero **Starcaster REFERENCE**.
+Presentar en este orden:
 
-Después presentar A, B y C de ese efecto.
+1. **Guitarra limpia, sin pedal.**
+2. **Fender Starcaster Distortion real.**
+3. **Modelo A.**
+4. **Modelo B.**
+5. **Modelo C.**
 
-Para cada candidato:
+Para cada modelo A/B/C se repiten las siguientes preguntas.
 
-**Comparando con la referencia, ¿qué tan similar te parece el audio A/B/C?**
+### Pregunta cuantitativa principal
+
+**Comparando el Modelo X con el pedal real, ¿qué tan fiel te parece la emulación del efecto?**
 
 Escala de 1 a 5:
 
-1. Muy diferente.
-2. Bastante diferente.
-3. Moderadamente similar.
-4. Muy similar.
-5. Prácticamente indistinguible.
+1. Muy poco fiel.
+2. Poco fiel.
+3. Moderadamente fiel.
+4. Muy fiel.
+5. Prácticamente indistinguible del pedal real.
 
-Al final del bloque:
+### Pregunta de selección múltiple
 
-**¿Cuál de los tres audios te pareció más similar a la referencia?**
+**¿Qué diferencias notas entre el Modelo X y el pedal real? Selecciona todas las que apliquen.**
 
-- A.
-- B.
-- C.
-- No percibí una diferencia clara entre ellos.
+- Nivel o volumen.
+- Timbre o color del sonido.
+- Cantidad o carácter de la distorsión.
+- Ataque o respuesta al tocar.
+- Sustain.
+- Ruido o artefactos.
+- No noto una diferencia clara.
+- Otro.
 
-## Bloque 2: MXR Dyna Comp
+### Pregunta abierta
 
-Repetir exactamente la misma estructura utilizando **Dyna Comp REFERENCE** y los candidatos A, B y C asignados para ese efecto.
+**Si quieres, describe con tus propias palabras cualquier diferencia que notes entre el Modelo X y el pedal real.**
+
+Respuesta abierta opcional.
+
+### Comparación final del bloque
+
+**De los Modelos A, B y C, ¿cuál te pareció más fiel al pedal real?**
+
+- Modelo A.
+- Modelo B.
+- Modelo C.
+- No percibí una diferencia clara.
+
+Esta pregunta es complementaria. La medida principal sigue siendo la calificación individual de fidelidad de cada modelo.
+
+## Bloque 2. MXR Dyna Comp
+
+Presentar en este orden:
+
+1. **Guitarra limpia, sin pedal.**
+2. **MXR Dyna Comp real.**
+3. **Modelo A.**
+4. **Modelo B.**
+5. **Modelo C.**
+
+Para cada modelo se utiliza la misma escala de fidelidad de 1 a 5.
+
+### Pregunta de selección múltiple
+
+**¿Qué diferencias notas entre el Modelo X y el pedal real? Selecciona todas las que apliquen.**
+
+- Nivel o volumen.
+- Timbre o color del sonido.
+- Ataque.
+- Sustain.
+- Cantidad o carácter de la compresión.
+- Respuesta dinámica.
+- Ruido o artefactos.
+- No noto una diferencia clara.
+- Otro.
+
+### Pregunta abierta
+
+**Si quieres, describe con tus propias palabras cualquier diferencia que notes entre el Modelo X y el pedal real.**
+
+Respuesta abierta opcional.
+
+Al final se repite la pregunta de cuál de los tres modelos pareció más fiel al pedal real.
 
 ## Instrucciones de escucha
 
 - utilizar audífonos o parlantes en condiciones cómodas;
 - ajustar el volumen antes de comenzar;
-- no modificar deliberadamente el volumen entre referencia y candidatos;
+- mantener el volumen estable durante cada bloque;
 - se permite repetir los audios;
-- responder según similitud percibida, no según cuál sonido se prefiere.
+- comparar fidelidad respecto al pedal real, no únicamente cuál sonido se prefiere;
+- no es necesario conocer conceptos de redes neuronales.
 
 ## Análisis previsto
 
-La prueba se analizará de forma descriptiva.
+La evaluación combinará información cuantitativa y cualitativa.
 
 Para cada efecto y arquitectura se reportará:
 
 - número de respuestas válidas;
-- mediana de similitud en la escala 1 a 5;
+- mediana de fidelidad en la escala 1 a 5;
 - rango intercuartílico;
 - distribución de respuestas;
-- número y porcentaje de veces que la arquitectura fue seleccionada como la más similar.
+- frecuencia de categorías perceptuales seleccionadas;
+- número y porcentaje de veces que la arquitectura fue seleccionada como la más fiel.
 
-Si se recoge experiencia del participante, se puede mostrar como contexto descriptivo. No se realizarán afirmaciones inferenciales fuertes entre subgrupos si el tamaño de muestra no lo permite.
+Las respuestas abiertas se resumirán por temas recurrentes, por ejemplo diferencias de nivel, timbre, distorsión, ataque, sustain o dinámica. No se asignarán categorías a priori que no aparezcan en las respuestas y no se presentarán comentarios individuales como representativos de toda la muestra.
+
+Si se recoge experiencia del participante, se reportará como contexto descriptivo. No se realizarán afirmaciones inferenciales fuertes entre subgrupos si el tamaño de muestra no lo permite.
 
 ## Alcance y cautelas
 
-La muestra será de conveniencia y la evaluación utiliza un único fragmento por efecto al 50 %. Por lo tanto, sus resultados complementan las métricas objetivas pero no representan una prueba perceptual exhaustiva de todos los settings ni de toda la población de oyentes.
+La muestra será de conveniencia y la evaluación utiliza un único fragmento por efecto al 50 %. Por lo tanto, sus resultados complementan las métricas objetivas pero no representan una evaluación perceptual exhaustiva de todos los settings ni de toda la población de oyentes.
 
-La evaluación perceptual debe interpretarse junto con ESR, MAE, MR-STFT, error LUFS, la prueba externa de generalización y el benchmark de eficiencia.
+La evaluación debe interpretarse junto con ESR, MAE, MR-STFT, error LUFS, la prueba externa de generalización y el benchmark de eficiencia.
