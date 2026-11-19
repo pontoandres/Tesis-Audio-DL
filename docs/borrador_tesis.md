@@ -7,7 +7,7 @@
 **Profesora asesora:** Haydemar Maria Nuñez Castro  
 **Bogotá, 2026**
 
-> Documento de trabajo para revisión. La estructura sigue el template enviado por la asesora y todavía contiene evaluaciones pendientes antes de la entrega final.
+> Documento de trabajo para revisión. La estructura sigue el template enviado por la asesora. La prueba adicional de generalización ya fue ejecutada y la evaluación perceptual continúa pendiente antes de la entrega final.
 
 ## Índice provisional
 
@@ -44,7 +44,8 @@
     - 6.2.4 Comportamiento de validación en Dyna Comp
     - 6.2.5 Eficiencia computacional
     - 6.2.6 Compromiso entre fidelidad y eficiencia
-    - 6.2.7 Fuentes de error e incertidumbre
+    - 6.2.7 Generalización sobre material no visto
+    - 6.2.8 Fuentes de error e incertidumbre
 - **7. Conclusiones**
   - 7.1 Discusión
   - 7.2 Trabajo futuro
@@ -155,7 +156,7 @@ La metodología se divide en cinco etapas. Primero se realiza la adquisición de
 
 La matriz principal contiene dos efectos, cuatro configuraciones por efecto y tres arquitecturas, para un total de 24 modelos entrenados desde cero. Los experimentos de fine-tuning a 50 % se conservan como análisis complementario y no modifican la comparación principal.
 
-La evaluación objetiva se complementará con una prueba sobre material claramente no visto y con una evaluación perceptual. Estas dos actividades continúan pendientes de diseño definitivo con la asesora y no se presentan como resultados completados en este borrador.
+La evaluación objetiva se complementó con una prueba adicional sobre material claramente no visto durante entrenamiento o selección de checkpoints. Se utilizó una nueva interpretación de guitarra y se evaluaron los modelos congelados del setting 50 % de ambos pedales con las mismas métricas comunes. La evaluación perceptual continúa pendiente y se mantiene separada de esta prueba objetiva.
 
 ## 4.4 Restricciones
 
@@ -246,7 +247,11 @@ Las métricas de eficiencia son número de parámetros, tamaño estandarizado de
 
 ### 6.1.3 Evaluación cualitativa y generalización
 
-Esta parte del protocolo continúa pendiente de cierre con la asesora. Se propone realizar una prueba adicional con material claramente no visto durante entrenamiento y complementar las métricas objetivas mediante una evaluación perceptual online. Todavía no se han fijado el número de participantes, la escala de respuesta, los fragmentos de audio, el orden de presentación, la aleatorización ni el método de análisis. Por esta razón, este borrador no presenta resultados cualitativos como si ya hubieran sido ejecutados.
+La generalización se evaluó mediante una grabación adicional de 218.22 s a 44.1 kHz que no pertenecía a los conjuntos originales de entrenamiento, validación o prueba. La misma interpretación dry se reprodujo físicamente a través del Fender Starcaster Distortion y del MXR Dyna Comp con el control principal en 50 %. Para Dyna Comp se mantuvo la misma convención experimental del dataset original, incluyendo el ajuste fijo de +6 dB aplicado al target.
+
+Las nuevas parejas input/target se alinearon con el mismo criterio causal utilizado en el proyecto. El residual mediano quedó en 128 muestras para Starcaster y 131 muestras para Dyna Comp, valores cercanos al objetivo de 128 muestras. No se reentrenó ningún modelo ni se utilizaron estos audios para seleccionar checkpoints. Se ejecutaron únicamente los modelos CNN, LSTM y TCN ya congelados del setting 50 % y se calcularon ESR, MAE, MR-STFT y error LUFS mediante el evaluador común.
+
+La evaluación perceptual online permanece pendiente. Esta actividad se diseñará con ejemplos anonimizados del target real y las predicciones, indicaciones de escucha a volumen cómodo y una escala de similitud definida antes de recoger respuestas. Sus resultados no se presentan todavía en este borrador.
 
 ## 6.2 Validación de resultados
 
@@ -313,7 +318,26 @@ En Dyna Comp no aparece una arquitectura que domine de la misma manera. TCN cons
 
 ![Dyna Comp: fidelidad frente a costo GPU](docs/figures/fidelity_efficiency/dynacomp_esr_vs_cuda_rtf.png)
 
-### 6.2.7 Fuentes de error e incertidumbre
+### 6.2.7 Generalización sobre material no visto
+
+La prueba adicional utilizó una interpretación de guitarra completamente separada de los datos originales y evaluó los tres modelos del setting 50 % de cada pedal sin modificar sus pesos.
+
+| Efecto | Arquitectura | ESR | MAE | MR-STFT | Error LUFS (dB) |
+|---|---|---:|---:|---:|---:|
+| Starcaster | CNN | **0.088174** | **0.013746** | 1.534211 | **1.251583** |
+| Starcaster | LSTM | 0.120346 | 0.017254 | 3.056460 | 1.490259 |
+| Starcaster | TCN | 0.125942 | 0.017296 | **1.433975** | 1.444384 |
+| Dyna Comp | CNN | 1.585805 | 0.044117 | 2.910304 | **6.565575** |
+| Dyna Comp | LSTM | **1.048534** | **0.036068** | **2.123175** | 14.768368 |
+| Dyna Comp | TCN | 1.312389 | 0.041225 | 2.667515 | 9.551330 |
+
+En Starcaster los tres modelos mantienen errores temporales bajos sobre el nuevo material. CNN obtiene el menor ESR, MAE y error LUFS, mientras TCN obtiene el menor MR-STFT. Frente al split de prueba original de 50 %, ESR y MAE son menores para las tres arquitecturas, mientras el error LUFS aumenta. Esta comparación debe interpretarse de forma descriptiva porque el contenido musical del conjunto externo es distinto y no constituye una réplica del test original.
+
+En Dyna Comp el resultado es más exigente. Las cuatro métricas empeoran para las tres arquitecturas respecto al split original de 50 %. LSTM obtiene el menor ESR, MAE y MR-STFT del conjunto externo, mientras CNN conserva el menor error LUFS. El target presenta -26.63 LUFS y las predicciones quedan por debajo de ese nivel: -33.19 LUFS para CNN, -41.40 LUFS para LSTM y -36.18 LUFS para TCN. El resultado muestra que el comportamiento aprendido para el compresor es menos robusto frente a este material externo, especialmente en la reproducción del nivel global.
+
+La prueba no permite atribuir esta degradación a una causa única. Por tratarse de un compresor, diferencias en la distribución de nivel y dinámica de la señal de entrada son una explicación plausible, pero no se midieron de forma controlada como una variable independiente. Por esta razón, el resultado se reporta como evidencia de sensibilidad de generalización y no como una causa demostrada.
+
+### 6.2.8 Fuentes de error e incertidumbre
 
 La interpretación de los resultados debe considerar varias fuentes de incertidumbre experimental. La primera es la cadena de adquisición. No se utilizó una reamp box, por lo que la interfaz entrega señal de línea directamente a los pedales. Esta condición se mantiene constante, pero su efecto eléctrico no se cuantificó de forma independiente.
 
@@ -337,19 +361,19 @@ Para Dyna Comp la situación es diferente. LSTM obtiene el menor ESR y MR-STFT p
 
 El benchmark también muestra que parámetros y velocidad no son equivalentes. TCN tiene 43,873 parámetros, frente a 8,305 de CNN y 4,513 de LSTM, pero es la arquitectura más rápida en GPU. En CPU ocurre lo contrario y LSTM obtiene el mejor throughput. La plataforma de ejecución debe formar parte de la conclusión sobre eficiencia.
 
-Las principales limitaciones son el uso de un único dispositivo físico por tipo de efecto, la ausencia de reamp box, el uso de cuatro posiciones del control principal y la falta todavía de evaluación perceptual y de una prueba adicional de generalización. Además, el comportamiento de validación temprana en Dyna Comp con LSTM y TCN está documentado, pero su causa no fue aislada experimentalmente.
+Las principales limitaciones son el uso de un único dispositivo físico por tipo de efecto, la ausencia de reamp box, el uso de cuatro posiciones del control principal y la falta todavía de evaluación perceptual. La prueba adicional de generalización se realizó únicamente con una nueva interpretación y con el setting 50 %, por lo que no permite caracterizar generalización para todas las configuraciones, guitarras, intérpretes o niveles de entrada. Además, el comportamiento de validación temprana en Dyna Comp con LSTM y TCN está documentado, pero su causa no fue aislada experimentalmente.
 
 Con la evidencia disponible, la respuesta preliminar a la pregunta de investigación es que no existe una arquitectura universalmente superior. Para Starcaster, TCN ofrece el mejor compromiso observado entre ESR/MR-STFT y throughput GPU. Para Dyna Comp, la selección depende de si se prioriza fidelidad espectral y ESR, correspondencia de amplitud y loudness, o velocidad de inferencia. En CPU, LSTM es la arquitectura más eficiente bajo el protocolo medido.
 
-La validación cualitativa todavía no puede discutirse como un resultado del proyecto porque no se ha ejecutado. La conclusión final deberá incorporar esa evidencia junto con la prueba adicional sobre material no visto.
+La prueba externa refuerza la diferencia entre los dos efectos. En Starcaster los modelos conservan un comportamiento estable sobre el material no visto, con CNN favorecida por ESR, MAE y LUFS y TCN por MR-STFT. En Dyna Comp las tres arquitecturas presentan una degradación frente al test original de 50 %, especialmente en loudness, lo que indica una generalización más sensible para el compresor bajo esta nueva interpretación. La validación perceptual todavía no puede discutirse como un resultado porque no se ha ejecutado.
 
 ## 7.2 Trabajo futuro
 
-Antes de cerrar el proyecto se deben completar dos actividades que hacen parte de la validación prevista. La primera es definir y ejecutar una prueba adicional sobre material claramente no visto para estudiar generalización de manera más explícita. La segunda es diseñar y ejecutar la evaluación perceptual, definiendo participantes, consentimiento, fragmentos, escala de respuesta, aleatorización y método de análisis. También queda por decidir con la asesora si se incorpora una métrica adicional de envolvente o dinámica para complementar la evaluación del compresor.
+Antes de cerrar el proyecto queda pendiente diseñar y ejecutar la evaluación perceptual, definiendo participantes, consentimiento, fragmentos, escala de respuesta, anonimización y método de análisis. La prueba adicional de generalización ya fue ejecutada y sus resultados se incorporaron a la discusión. No se planea añadir una nueva métrica de envolvente o dinámica en esta etapa salvo que la asesora la solicite explícitamente, para evitar ampliar el alcance experimental al final del proyecto.
 
 Como extensiones posteriores al alcance de esta tesis, sería útil estudiar modelos condicionados por los parámetros del efecto. En este trabajo se entrena una red diferente para cada setting, pero técnicas como FiLM permitirían investigar si una sola red puede representar múltiples configuraciones del pedal. Esta comparación introduciría una pregunta adicional sobre especialización frente a condicionamiento y por eso no se incluyó en la matriz principal actual.
 
-También sería posible ampliar el estudio a más dispositivos físicos, incluir más controles por pedal, evaluar otras familias de modelos, medir latencia end-to-end dentro de un plugin de audio y repetir el benchmark sobre hardware adicional. Estas extensiones permitirían estudiar qué tan generales son los resultados obtenidos aquí.
+También sería posible ampliar el estudio a más dispositivos físicos, incluir más controles por pedal, evaluar otras familias de modelos, medir latencia end-to-end dentro de un plugin de audio y repetir el benchmark sobre hardware adicional. En particular, la generalización del compresor debería estudiarse con varias interpretaciones, niveles de entrada, guitarras y configuraciones del pedal para determinar qué condiciones explican la degradación observada en el conjunto externo.
 
 # REFERENCIAS
 
