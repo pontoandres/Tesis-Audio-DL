@@ -5213,3 +5213,78 @@ Prioridades siguientes:
 ---
 
 **FIN DEL ESTADO ACTUALIZADO DOCUMENTALMENTE AL 2026-11-10.**
+
+
+---
+
+# 64. Prueba adicional de generalización sobre material no visto — 2026-11-19
+
+[OBJETIVO] Se ejecutó una prueba externa de generalización con material que no pertenecía a los conjuntos originales de entrenamiento, validación o prueba. La prueba utiliza los modelos ya congelados del setting 50 % y no modifica la selección de checkpoints.
+
+## 64.1 Material y preparación
+
+[DATOS] Se grabó una nueva interpretación dry de guitarra de aproximadamente 218.22 s a 44.1 kHz. La misma interpretación se reprodujo físicamente a través de:
+
+- Fender Starcaster Distortion al 50 %;
+- MXR Dyna Comp con Sensitivity al 50 % y Output en la posición definida para la serie.
+
+[METODOLOGÍA] Para Dyna Comp se mantuvo la convención del dataset original y se aplicó +6 dB de Clip Gain al target antes de exportar.
+
+[ALINEACIÓN] Se creó `scripts/prepare_generalization.py` para alinear las nuevas capturas sin reutilizar los lags históricos hardcodeados del dataset original.
+
+Resultados de alineación:
+
+- Starcaster: lag bruto total +90 muestras, residual mediano 128;
+- Dyna Comp: lag bruto total +25 muestras, residual mediano 131;
+- residual objetivo del pipeline: 128 muestras.
+
+[CAUTELA] El residual de 128 muestras sigue siendo una convención causal del pipeline y no una medición de latencia física del pedal.
+
+## 64.2 Correcciones detectadas durante la ejecución
+
+[BUG] La primera versión del downmix convertía audio PCM16 estéreo a float mediante promedio de canales antes de normalizar por 32768. El promedio cambiaba el dtype a float pero conservaba escala PCM, por lo que el audio procesado terminaba saturado al convertirlo nuevamente a PCM16.
+
+[FIX] `prepare_generalization.py` fue corregido para normalizar PCM a float antes de realizar el promedio de canales. La corrida afectada se descartó y todas las métricas finales fueron recalculadas desde los WAV raw.
+
+[BUG] La primera versión de `run_generalization.py` llamaba `process_data(..., test_chunk)` del código Wright. En GatedConvNet la firma de `process_data` no recibe chunk, por lo que el valor 20000 era interpretado como `grad=True` y el CNN intentaba procesar los 218 s completos en GPU, provocando OOM en la GTX 1060 de 3 GB.
+
+[FIX] Se implementó inferencia streaming explícita usando la misma estrategia validada en el benchmark de eficiencia:
+
+- CNN por bloques de 20,000 muestras con 2044 muestras de contexto causal;
+- LSTM por bloques preservando hidden state;
+- TCN con su contexto causal mediante `infer_full`.
+
+No se entrenó ni modificó ningún modelo durante estas correcciones.
+
+## 64.3 Resultados finales
+
+| Efecto | Arquitectura | ESR | MAE | MR-STFT | Error LUFS (dB) |
+|---|---|---:|---:|---:|---:|
+| Starcaster | CNN | 0.088174 | 0.013746 | 1.534211 | 1.251583 |
+| Starcaster | LSTM | 0.120346 | 0.017254 | 3.056460 | 1.490259 |
+| Starcaster | TCN | 0.125942 | 0.017296 | 1.433975 | 1.444384 |
+| Dyna Comp | CNN | 1.585805 | 0.044117 | 2.910304 | 6.565575 |
+| Dyna Comp | LSTM | 1.048534 | 0.036068 | 2.123175 | 14.768368 |
+| Dyna Comp | TCN | 1.312389 | 0.041225 | 2.667515 | 9.551330 |
+
+[RESULTADO] En Starcaster, CNN obtiene el menor ESR, MAE y error LUFS. TCN obtiene el menor MR-STFT. Los errores temporales sobre el material externo son menores que en el split original de 50 %, aunque el error LUFS aumenta. La comparación es descriptiva porque el contenido musical no es el mismo.
+
+[RESULTADO] En Dyna Comp, LSTM obtiene el menor ESR, MAE y MR-STFT del conjunto externo, mientras CNN obtiene el menor error LUFS.
+
+[RESULTADO] El target Dyna Comp mide -26.63 LUFS. Las predicciones quedan en:
+
+- CNN: -33.19 LUFS;
+- LSTM: -41.40 LUFS;
+- TCN: -36.18 LUFS.
+
+[INTERPRETACIÓN] Las tres arquitecturas degradan en las cuatro métricas respecto al test original de Dyna Comp al 50 %. El resultado evidencia una generalización más sensible del compresor para este nuevo material, especialmente en nivel global.
+
+[CAUTELA] No se atribuye la degradación a una causa única. La distribución de nivel y dinámica de la nueva señal es una explicación plausible por la naturaleza del compresor, pero no fue aislada como variable experimental.
+
+[ARTEFACTOS] Los resultados finales están en:
+
+- `results/generalization/generalization_summary.csv`;
+- `results/generalization/generalization_summary.md`;
+- `results/generalization/evaluation/*.json`.
+
+[PRÓXIMO PASO] La prueba cuantitativa de generalización queda cerrada. El bloque experimental pendiente es la evaluación perceptual con fragmentos anonimizados del target real y las tres arquitecturas.
