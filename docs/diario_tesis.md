@@ -5288,3 +5288,26 @@ No se entrenó ni modificó ningún modelo durante estas correcciones.
 - `results/generalization/evaluation/*.json`.
 
 [PRÓXIMO PASO] La prueba cuantitativa de generalización queda cerrada. El bloque experimental pendiente es la evaluación perceptual con fragmentos anonimizados del target real y las tres arquitecturas.
+
+
+# 65. Evaluación perceptual y primer corte de respuestas — 2026-11-19
+
+[OBJETIVO] Complementar las métricas objetivas y la prueba de generalización con un estudio perceptual online sobre Starcaster y Dyna Comp, usando modelos congelados del setting 50 %.
+
+[IMPLEMENTACIÓN] Se ejecutó `scripts/prepare_perceptual_eval.py --start 160 --duration 25` para recortar de 2:40 a 3:05 el mismo intervalo en dry, pedal real y predicciones. Los nueve audios distintos se convirtieron a MP4 con imagen estática y audio AAC, fueron subidos como videos no listados en YouTube y se insertaron en un Google Forms. El dry es el mismo para los dos efectos. No se aplicó normalización independiente de loudness ni se volvieron a entrenar modelos. La compresión de audio de YouTube es una limitación del protocolo.
+
+[ENCUESTA] Se solicitó consentimiento, experiencia con guitarra/producción y dispositivo de reproducción. Por cada efecto se mostró dry, pedal real y modelos A/B/C, cada uno con valoración de fidelidad de 1 a 10, preguntas de diferencias percibidas y comentario opcional; al final del bloque se solicitó el modelo más fiel. Los participantes conocían las referencias dry y pedal físico, no las arquitecturas. El orden de exposición fue fijo.
+
+[CLAVE] Con semilla 42 y el script de preparación: Starcaster A=LSTM, B=CNN, C=TCN; Dyna Comp A=LSTM, B=TCN, C=CNN.
+
+[CORTE ACTUALIZADO] Última respuesta registrada el 19-11-2026 a las 23:51:58 según timestamps de Google Sheets. Total **12 cuestionarios completos**, de los cuales uno fue respondido primero por el investigador (sin consultar la clave, según indicó). Análisis principal con **11 participantes externos**. En el conjunto total, 5 utilizaron audífonos y 7 parlantes de computador/celular; experiencia autodeclarada: 7 ninguna, 3 básica y 2 intermedia.
+
+[RESULTADOS ACTUALIZADOS] Promedios de fidelidad de once participantes externos, escala 1–10: Starcaster CNN(B)=7.82, TCN(C)=7.36 y LSTM(A)=6.91, con preferencias A=1, B=5, C=4 y una respuesta de «No percibí una diferencia clara». Dyna Comp CNN(C)=8.45, LSTM(A)=6.64 y TCN(B)=3.27, con preferencias A=1, B=1, C=9. Incluyendo la respuesta del investigador (n=12), Starcaster A/B/C=7.00/7.75/7.33 y Dyna Comp A/B/C=6.42/3.08/8.00. La mediana (rango intercuartílico) de los once externos se documenta en el resumen agregado.
+
+[INTERPRETACIÓN] El mayor promedio perceptual para Dyna Comp corresponde a CNN, mientras el menor ESR sobre el audio externo corresponde a LSTM. Esta divergencia refuerza que una única métrica no resume fidelidad auditiva. El estudio es exploratorio, con muestra pequeña y por conveniencia, orden fijo, un solo fragmento por efecto, dispositivos heterogéneos y compresión con pérdida en YouTube. No se realizan inferencias poblacionales ni pruebas de significancia.
+
+[CONTROL DE ALINEACIÓN] Se midió retardo +131 muestras entre el dry y el pedal real del material Dyna Comp externo, próximo a +128 esperado. Esto no confirma que las predicciones de cada red estén libres de desplazamiento. No se corrigieron arbitrariamente los WAV originales ni se alteraron los checkpoints después de la encuesta.
+
+[ARTEFACTOS] Respuestas individuales almacenadas de forma privada en Google Sheets; resumen agregado versionado en `results/perceptual/perceptual_summary_2026-11-19.md`, actualización del protocolo en `docs/perceptual_evaluation_protocol.md` e integración en `docs/borrador_tesis.md`. Se requiere recalcular resultados si llegan respuestas adicionales después del corte.
+
+[PRÓXIMO PASO] Sincronizar Word de tesis con Markdown, revisar imágenes/tablas/bibliografía y solicitar comentarios de Haydemar sobre el borrador completo.

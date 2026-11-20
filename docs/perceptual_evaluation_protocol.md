@@ -1,6 +1,6 @@
 # Protocolo de evaluación perceptual
 
-**Estado:** protocolo definido para ejecución  
+**Estado:** ejecutado; corte exploratorio 19-11-2026, n=12 (once externos y una respuesta del investigador)  
 **Fecha:** 2026-11-19
 
 ## Objetivo
@@ -23,7 +23,7 @@ Para cada efecto se prepararán cinco archivos:
 
 Los cinco archivos utilizan exactamente el mismo intervalo temporal.
 
-El script `scripts/prepare_perceptual_eval.py` selecciona automáticamente un fragmento de 15 s utilizando únicamente la señal dry. La selección favorece una región activa con variación dinámica y no inspecciona el pedal real ni las predicciones para escoger el intervalo. Esto evita elegir un fragmento porque favorezca o perjudique a una arquitectura específica.
+Para la evaluación ejecutada se eligió manualmente el intervalo de 2:40 a 3:05 (**25 s**), con `--start 160 --duration 25`, manteniendo exactamente el mismo intervalo para dry, pedal físico y los tres modelos de ambos efectos. La selección del fragmento no fue aleatoria.
 
 El mismo intervalo se utiliza para Starcaster y Dyna Comp. El script realiza todos los recortes automáticamente, por lo que no se requiere edición manual de audio.
 
@@ -93,13 +93,11 @@ Para cada modelo A/B/C se repiten las siguientes preguntas.
 
 **Comparando el Modelo X con el pedal real, ¿qué tan fiel te parece la emulación del efecto?**
 
-Escala de 1 a 5:
+Escala de 1 a 10:
 
-1. Muy poco fiel.
-2. Poco fiel.
-3. Moderadamente fiel.
-4. Muy fiel.
-5. Prácticamente indistinguible del pedal real.
+- 1 = Nada fiel.
+- 10 = Prácticamente indistinguible del pedal real.
+- Valores intermedios = grados crecientes de fidelidad.
 
 ### Pregunta de selección múltiple
 
@@ -141,7 +139,7 @@ Presentar en este orden:
 4. **Modelo B.**
 5. **Modelo C.**
 
-Para cada modelo se utiliza la misma escala de fidelidad de 1 a 5.
+Para cada modelo se utiliza la misma escala de fidelidad de 1 a 10.
 
 ### Pregunta de selección múltiple
 
@@ -176,12 +174,12 @@ Al final se repite la pregunta de cuál de los tres modelos pareció más fiel a
 
 ## Análisis previsto
 
-La evaluación combinará información cuantitativa y cualitativa.
+La evaluación combinó información cuantitativa y cualitativa. Los resultados del primer corte se documentan en `results/perceptual/perceptual_summary_2026-11-19.md`; el análisis principal excluye la respuesta del investigador.
 
 Para cada efecto y arquitectura se reportará:
 
 - número de respuestas válidas;
-- mediana de fidelidad en la escala 1 a 5;
+- mediana de fidelidad en la escala 1 a 10;
 - rango intercuartílico;
 - distribución de respuestas;
 - frecuencia de categorías perceptuales seleccionadas;
@@ -193,6 +191,10 @@ Si se recoge experiencia del participante, se reportará como contexto descripti
 
 ## Alcance y cautelas
 
-La muestra será de conveniencia y la evaluación utiliza un único fragmento por efecto al 50 %. Por lo tanto, sus resultados complementan las métricas objetivas pero no representan una evaluación perceptual exhaustiva de todos los settings ni de toda la población de oyentes.
+La muestra fue de conveniencia y la evaluación utiliza un único fragmento por efecto al 50 %. Por lo tanto, sus resultados complementan las métricas objetivas pero no representan una evaluación perceptual exhaustiva de todos los settings ni de toda la población de oyentes.
 
 La evaluación debe interpretarse junto con ESR, MAE, MR-STFT, error LUFS, la prueba externa de generalización y el benchmark de eficiencia.
+
+## Ejecución documentada
+
+Los WAV se convirtieron en nueve videos MP4 con imagen estática y audio AAC, subidos a YouTube como videos no listados e insertados en Google Forms. El dry es idéntico para ambos efectos y se reutilizó. Los participantes escucharon en condiciones no controladas; el orden A/B/C fue fijo. Las calificaciones reflejan fidelidad percibida bajo esas condiciones y no una prueba ABX o de laboratorio. Corte actualizado: doce respuestas completas (once externas en el análisis principal), con última respuesta registrada el 19-11-2026 a las 23:51:58.
