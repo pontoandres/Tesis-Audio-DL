@@ -7,7 +7,7 @@
 **Profesora asesora:** Haydemar Maria Nuñez Castro  
 **Bogotá, 2026**
 
-> Documento de trabajo para revisión. La estructura sigue el template enviado por la asesora. La prueba adicional de generalización ya fue ejecutada y la evaluación perceptual continúa pendiente antes de la entrega final.
+> Documento de trabajo para revisión. La estructura sigue el template enviado por la asesora. La prueba adicional de generalización y el corte exploratorio de evaluación perceptual (n=9) ya fueron ejecutados; el informe sigue siendo un borrador para revisión.
 
 ## Índice provisional
 
@@ -156,7 +156,7 @@ La metodología se divide en cinco etapas. Primero se realiza la adquisición de
 
 La matriz principal contiene dos efectos, cuatro configuraciones por efecto y tres arquitecturas, para un total de 24 modelos entrenados desde cero. Los experimentos de fine-tuning a 50 % se conservan como análisis complementario y no modifican la comparación principal.
 
-La evaluación objetiva se complementó con una prueba adicional sobre material claramente no visto durante entrenamiento o selección de checkpoints. Se utilizó una nueva interpretación de guitarra y se evaluaron los modelos congelados del setting 50 % de ambos pedales con las mismas métricas comunes. La evaluación perceptual continúa pendiente y se mantiene separada de esta prueba objetiva.
+La evaluación objetiva se complementó con una prueba adicional sobre material claramente no visto durante entrenamiento o selección de checkpoints. Se utilizó una nueva interpretación de guitarra y se evaluaron los modelos congelados del setting 50 % de ambos pedales con las mismas métricas comunes. La evaluación perceptual se ejecutó sobre el mismo material externo con modelos congelados y se documentó por separado de las métricas objetivas.
 
 ## 4.4 Restricciones
 
@@ -164,7 +164,7 @@ La evaluación objetiva se complementó con una prueba adicional sobre material 
 
 **Ambientales.** El proyecto no requiere fabricación de hardware ni materiales adicionales. El consumo de energía asociado a entrenamiento e inferencia existe, pero no fue medido de forma independiente y no constituye una variable comparada entre modelos.
 
-**Sociales y éticas.** La parte cuantitativa utiliza grabaciones producidas dentro del proyecto y no contiene información personal de terceros. La evaluación perceptual prevista sí involucra participantes humanos. Antes de ejecutarla se debe definir consentimiento, manejo de respuestas, anonimización y nivel de exposición sonora. Esta evaluación todavía no se ha realizado.
+**Sociales y éticas.** La parte cuantitativa utiliza grabaciones producidas dentro del proyecto y no contiene información personal de terceros. La evaluación perceptual involucró participantes voluntarios, consentimiento y análisis agregado de resultados, sin publicar las respuestas individuales en el repositorio.
 
 **Legales y de propiedad intelectual.** Parte de la implementación se apoya en código abierto de Automated-GuitarAmpModelling y CoreAudioML. Las modificaciones propias y el uso de estos repositorios deben conservar atribución y respetar sus condiciones de licencia. Las referencias académicas utilizadas también deben mantenerse identificadas de forma explícita.
 
@@ -251,7 +251,7 @@ La generalización se evaluó mediante una grabación adicional de 218.22 s a 44
 
 Las nuevas parejas input/target se alinearon con el mismo criterio causal utilizado en el proyecto. El residual mediano quedó en 128 muestras para Starcaster y 131 muestras para Dyna Comp, valores cercanos al objetivo de 128 muestras. No se reentrenó ningún modelo ni se utilizaron estos audios para seleccionar checkpoints. Se ejecutaron únicamente los modelos CNN, LSTM y TCN ya congelados del setting 50 % y se calcularon ESR, MAE, MR-STFT y error LUFS mediante el evaluador común.
 
-La evaluación perceptual online permanece pendiente de ejecución. El protocolo definido presenta explícitamente la señal limpia, la salida del pedal físico real y tres emulaciones computacionales identificadas como Modelos A, B y C. Los nombres de las arquitecturas se ocultan únicamente para evitar sesgo por etiquetas técnicas. Para cada emulación se recogerá una calificación de fidelidad de 1 a 5, categorías perceptuales de selección múltiple y un comentario abierto opcional. Sus resultados no se presentan todavía en este borrador.
+La evaluación perceptual se ejecutó mediante Google Forms con videos no listados en YouTube, a partir del mismo material externo del setting 50 %. Se utilizó manualmente un fragmento de **2:40 a 3:05 (25 s)** igual en todas las condiciones. La identidad del pedal real y de la guitarra limpia fue visible y las arquitecturas se ocultaron como A/B/C. Cada emulación recibió una calificación **de 1 a 10**, categorías de diferencias sonoras y comentarios opcionales. Se registraron nueve cuestionarios completos, incluido uno del investigador; el análisis principal descriptivo excluye esa respuesta (n=8 externos).
 
 ## 6.2 Validación de resultados
 
@@ -337,7 +337,28 @@ En Dyna Comp el resultado es más exigente. Las cuatro métricas empeoran para l
 
 La prueba no permite atribuir esta degradación a una causa única. Por tratarse de un compresor, diferencias en la distribución de nivel y dinámica de la señal de entrada son una explicación plausible, pero no se midieron de forma controlada como una variable independiente. Por esta razón, el resultado se reporta como evidencia de sensibilidad de generalización y no como una causa demostrada.
 
-### 6.2.8 Fuentes de error e incertidumbre
+### 6.2.8 Evaluación perceptual exploratoria
+
+Se recibieron nueve evaluaciones completas el 19 de noviembre de 2026, incluida la respuesta del investigador, que indicó haber realizado la evaluación sin consultar la clave de arquitecturas. Para el análisis principal se consideran ocho oyentes externos y se conservan los nueve como análisis de sensibilidad. Seis participantes declararon no tener experiencia en guitarra eléctrica o producción de audio, uno experiencia básica y dos intermedia; cuatro utilizaron audífonos y cinco parlantes de computador o celular.
+
+En el formulario se escuchó la señal dry, el pedal físico real y tres emulaciones del mismo fragmento externo de 25 segundos. Los oyentes conocían cuáles archivos eran dry y pedal real, pero no la identidad de CNN, LSTM ni TCN. El orden A/B/C fue fijo; se calificó fidelidad de 1 a 10, se marcaron diferencias perceptuales y se indicó qué modelo parecía más fiel.
+
+| Efecto | Modelo | Arquitectura | Media n=8 externos | Media n=9 total | Preferido n=8 |
+|---|---|---|---:|---:|---:|
+| Starcaster | A | LSTM | 7.00 | 7.11 | 1/8 |
+| Starcaster | B | CNN | **7.75** | **7.67** | 4/8 |
+| Starcaster | C | TCN | 7.13 | 7.11 | 3/8 |
+| Dyna Comp | A | LSTM | 7.13 | 6.78 | 0/8 |
+| Dyna Comp | B | TCN | 3.63 | 3.33 | 1/8 |
+| Dyna Comp | C | CNN | **8.63** | **8.00** | 7/8 |
+
+En Starcaster, las tres valoraciones se encuentran relativamente próximas. CNN obtiene el promedio perceptual más alto entre los ocho evaluadores externos, seguida de TCN y LSTM. Para Dyna Comp, CNN concentra siete de las ocho preferencias externas y la media más alta, mientras TCN recibe la valoración más baja. Este orden difiere del resultado objetivo de generalización de Dyna Comp, en el que LSTM había registrado el menor ESR (1.048534). Las métricas temporales y las valoraciones humanas miden aspectos distintos de la fidelidad y no deben equipararse.
+
+En las preguntas abiertas aparecen observaciones relacionadas con volumen, timbre, ataque, sustain y artefactos. Estos comentarios contextualizan las calificaciones, pero no permiten establecer causas técnicas definitivas ni generalizar a una población de oyentes.
+
+La evaluación tiene importantes limitaciones: muestra pequeña y de conveniencia, un solo fragmento por efecto y setting al 50 %, dispositivos de reproducción heterogéneos, orden de presentación fijo y audio comprimido a AAC/YouTube. No se aplicó igualación independiente de volumen; por lo tanto, los oyentes también podían penalizar diferencias de nivel. El retardo residual medido de 131 muestras del par dry/pedal real de Dyna Comp, próximo a las 128 buscadas, no verifica por sí solo la alineación de cada predicción. Los resultados se reportan como exploratorios y no se realizaron inferencias estadísticas. El protocolo y el corte agregado están en `docs/perceptual_evaluation_protocol.md` y `results/perceptual/perceptual_summary_2026-11-19.md`.
+
+### 6.2.9 Fuentes de error e incertidumbre
 
 La interpretación de los resultados debe considerar varias fuentes de incertidumbre experimental. La primera es la cadena de adquisición. No se utilizó una reamp box, por lo que la interfaz entrega señal de línea directamente a los pedales. Esta condición se mantiene constante, pero su efecto eléctrico no se cuantificó de forma independiente.
 
@@ -361,15 +382,15 @@ Para Dyna Comp la situación es diferente. LSTM obtiene el menor ESR y MR-STFT p
 
 El benchmark también muestra que parámetros y velocidad no son equivalentes. TCN tiene 43,873 parámetros, frente a 8,305 de CNN y 4,513 de LSTM, pero es la arquitectura más rápida en GPU. En CPU ocurre lo contrario y LSTM obtiene el mejor throughput. La plataforma de ejecución debe formar parte de la conclusión sobre eficiencia.
 
-Las principales limitaciones son el uso de un único dispositivo físico por tipo de efecto, la ausencia de reamp box, el uso de cuatro posiciones del control principal y la falta todavía de evaluación perceptual. La prueba adicional de generalización se realizó únicamente con una nueva interpretación y con el setting 50 %, por lo que no permite caracterizar generalización para todas las configuraciones, guitarras, intérpretes o niveles de entrada. Además, el comportamiento de validación temprana en Dyna Comp con LSTM y TCN está documentado, pero su causa no fue aislada experimentalmente.
+Las principales limitaciones son el uso de un único dispositivo físico por tipo de efecto, la ausencia de reamp box, el uso de cuatro posiciones del control principal y el carácter exploratorio y la muestra reducida de la evaluación perceptual. La prueba adicional de generalización se realizó únicamente con una nueva interpretación y con el setting 50 %, por lo que no permite caracterizar generalización para todas las configuraciones, guitarras, intérpretes o niveles de entrada. Además, el comportamiento de validación temprana en Dyna Comp con LSTM y TCN está documentado, pero su causa no fue aislada experimentalmente.
 
 Con la evidencia disponible, la respuesta preliminar a la pregunta de investigación es que no existe una arquitectura universalmente superior. Para Starcaster, TCN ofrece el mejor compromiso observado entre ESR/MR-STFT y throughput GPU. Para Dyna Comp, la selección depende de si se prioriza fidelidad espectral y ESR, correspondencia de amplitud y loudness, o velocidad de inferencia. En CPU, LSTM es la arquitectura más eficiente bajo el protocolo medido.
 
-La prueba externa refuerza la diferencia entre los dos efectos. En Starcaster los modelos conservan un comportamiento estable sobre el material no visto, con CNN favorecida por ESR, MAE y LUFS y TCN por MR-STFT. En Dyna Comp las tres arquitecturas presentan una degradación frente al test original de 50 %, especialmente en loudness, lo que indica una generalización más sensible para el compresor bajo esta nueva interpretación. La validación perceptual todavía no puede discutirse como un resultado porque no se ha ejecutado.
+La prueba externa refuerza la diferencia entre los dos efectos. En Starcaster los modelos conservan un comportamiento estable sobre el material no visto, con CNN favorecida por ESR, MAE y LUFS y TCN por MR-STFT. En Dyna Comp las tres arquitecturas presentan una degradación frente al test original de 50 %, especialmente en loudness, lo que indica una generalización más sensible para el compresor bajo esta nueva interpretación. La evaluación perceptual exploratoria ofrece evidencia adicional: CNN recibió la mayor valoración para Dyna Comp, aunque LSTM obtuvo el menor ESR en ese material externo. La discrepancia refuerza la necesidad de distinguir similitud temporal, correspondencia de nivel y fidelidad auditiva.
 
 ## 7.2 Trabajo futuro
 
-Antes de cerrar el proyecto queda pendiente diseñar y ejecutar la evaluación perceptual, definiendo participantes, consentimiento, fragmentos, escala de respuesta, anonimización y método de análisis. La prueba adicional de generalización ya fue ejecutada y sus resultados se incorporaron a la discusión. No se planea añadir una nueva métrica de envolvente o dinámica en esta etapa salvo que la asesora la solicite explícitamente, para evitar ampliar el alcance experimental al final del proyecto.
+La prueba de generalización y el primer corte de evaluación perceptual ya fueron ejecutados y sus resultados se incorporaron a la discusión. Para continuar el estudio sería conveniente ampliar la muestra, contrabalancear la presentación y controlar las condiciones de escucha. No se planea añadir una nueva métrica de envolvente o dinámica en esta etapa salvo que la asesora la solicite explícitamente, para evitar ampliar el alcance experimental al final del proyecto.
 
 Como extensiones posteriores al alcance de esta tesis, sería útil estudiar modelos condicionados por los parámetros del efecto. En este trabajo se entrena una red diferente para cada setting, pero técnicas como FiLM permitirían investigar si una sola red puede representar múltiples configuraciones del pedal. Esta comparación introduciría una pregunta adicional sobre especialización frente a condicionamiento y por eso no se incluyó en la matriz principal actual.
 
