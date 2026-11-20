@@ -7,7 +7,7 @@
 **Profesora asesora:** Haydemar Maria Nuñez Castro  
 **Bogotá, 2026**
 
-> Documento de trabajo para revisión. La estructura sigue el template enviado por la asesora. La prueba adicional de generalización y el corte exploratorio de evaluación perceptual (n=9) ya fueron ejecutados; el informe sigue siendo un borrador para revisión.
+> Documento de trabajo para revisión. La estructura sigue el template enviado por la asesora. La prueba adicional de generalización y el corte exploratorio de evaluación perceptual (n=12, incluidos 11 oyentes externos) ya fueron ejecutados; el informe sigue siendo un borrador para revisión.
 
 ## Índice provisional
 
@@ -251,7 +251,7 @@ La generalización se evaluó mediante una grabación adicional de 218.22 s a 44
 
 Las nuevas parejas input/target se alinearon con el mismo criterio causal utilizado en el proyecto. El residual mediano quedó en 128 muestras para Starcaster y 131 muestras para Dyna Comp, valores cercanos al objetivo de 128 muestras. No se reentrenó ningún modelo ni se utilizaron estos audios para seleccionar checkpoints. Se ejecutaron únicamente los modelos CNN, LSTM y TCN ya congelados del setting 50 % y se calcularon ESR, MAE, MR-STFT y error LUFS mediante el evaluador común.
 
-La evaluación perceptual se ejecutó mediante Google Forms con videos no listados en YouTube, a partir del mismo material externo del setting 50 %. Se utilizó manualmente un fragmento de **2:40 a 3:05 (25 s)** igual en todas las condiciones. La identidad del pedal real y de la guitarra limpia fue visible y las arquitecturas se ocultaron como A/B/C. Cada emulación recibió una calificación **de 1 a 10**, categorías de diferencias sonoras y comentarios opcionales. Se registraron nueve cuestionarios completos, incluido uno del investigador; el análisis principal descriptivo excluye esa respuesta (n=8 externos).
+La evaluación perceptual se ejecutó mediante Google Forms con videos no listados en YouTube, a partir del mismo material externo del setting 50 %. Se utilizó manualmente un fragmento de **2:40 a 3:05 (25 s)** igual en todas las condiciones. La identidad del pedal real y de la guitarra limpia fue visible y las arquitecturas se ocultaron como A/B/C. Cada emulación recibió una calificación **de 1 a 10**, categorías de diferencias sonoras y comentarios opcionales. Se registraron doce cuestionarios completos, incluido uno del investigador; el análisis principal descriptivo excluye esa respuesta (n=11 externos).
 
 ## 6.2 Validación de resultados
 
@@ -339,20 +339,20 @@ La prueba no permite atribuir esta degradación a una causa única. Por tratarse
 
 ### 6.2.8 Evaluación perceptual exploratoria
 
-Se recibieron nueve evaluaciones completas el 19 de noviembre de 2026, incluida la respuesta del investigador, que indicó haber realizado la evaluación sin consultar la clave de arquitecturas. Para el análisis principal se consideran ocho oyentes externos y se conservan los nueve como análisis de sensibilidad. Seis participantes declararon no tener experiencia en guitarra eléctrica o producción de audio, uno experiencia básica y dos intermedia; cuatro utilizaron audífonos y cinco parlantes de computador o celular.
+Se recibieron doce evaluaciones completas con última respuesta registrada el 19 de noviembre de 2026 a las 23:51:58, incluida la respuesta del investigador, quien indicó haber respondido sin consultar la clave de arquitecturas. Para el análisis principal se consideran once oyentes externos y se conservan las doce respuestas como análisis de sensibilidad. Siete participantes declararon no tener experiencia en guitarra eléctrica o producción de audio, tres experiencia básica y dos intermedia; cinco utilizaron audífonos y siete parlantes de computador o celular.
 
 En el formulario se escuchó la señal dry, el pedal físico real y tres emulaciones del mismo fragmento externo de 25 segundos. Los oyentes conocían cuáles archivos eran dry y pedal real, pero no la identidad de CNN, LSTM ni TCN. El orden A/B/C fue fijo; se calificó fidelidad de 1 a 10, se marcaron diferencias perceptuales y se indicó qué modelo parecía más fiel.
 
-| Efecto | Modelo | Arquitectura | Media n=8 externos | Media n=9 total | Preferido n=8 |
-|---|---|---|---:|---:|---:|
-| Starcaster | A | LSTM | 7.00 | 7.11 | 1/8 |
-| Starcaster | B | CNN | **7.75** | **7.67** | 4/8 |
-| Starcaster | C | TCN | 7.13 | 7.11 | 3/8 |
-| Dyna Comp | A | LSTM | 7.13 | 6.78 | 0/8 |
-| Dyna Comp | B | TCN | 3.63 | 3.33 | 1/8 |
-| Dyna Comp | C | CNN | **8.63** | **8.00** | 7/8 |
+| Efecto | Modelo | Arquitectura | Media n=11 externos | Mediana [Q1–Q3] | Media n=12 total | Preferido n=11 |
+|---|---|---|---:|---:|---:|---:|
+| Starcaster | A | LSTM | 6.91 | 7 [6.00–8.50] | 7.00 | 1/11 |
+| Starcaster | B | CNN | **7.82** | 8 [7.00–9.00] | **7.75** | 5/11 |
+| Starcaster | C | TCN | 7.36 | 8 [6.50–8.50] | 7.33 | 4/11 |
+| Dyna Comp | A | LSTM | 6.64 | 7 [5.00–8.00] | 6.42 | 1/11 |
+| Dyna Comp | B | TCN | 3.27 | 3 [1.00–5.00] | 3.08 | 1/11 |
+| Dyna Comp | C | CNN | **8.45** | 9 [7.50–9.50] | **8.00** | 9/11 |
 
-En Starcaster, las tres valoraciones se encuentran relativamente próximas. CNN obtiene el promedio perceptual más alto entre los ocho evaluadores externos, seguida de TCN y LSTM. Para Dyna Comp, CNN concentra siete de las ocho preferencias externas y la media más alta, mientras TCN recibe la valoración más baja. Este orden difiere del resultado objetivo de generalización de Dyna Comp, en el que LSTM había registrado el menor ESR (1.048534). Las métricas temporales y las valoraciones humanas miden aspectos distintos de la fidelidad y no deben equipararse.
+En Starcaster, las tres valoraciones se encuentran relativamente próximas. CNN obtiene el promedio perceptual más alto entre los once evaluadores externos (7.82/10), seguida de TCN (7.36/10) y LSTM (6.91/10). Cinco prefirieron CNN, cuatro TCN, uno LSTM y una persona indicó no percibir diferencias claras. Para Dyna Comp, CNN concentra nueve de las once preferencias externas y la media más alta (8.45/10), mientras TCN recibe la valoración más baja (3.27/10). Este orden difiere del resultado objetivo de generalización de Dyna Comp, en el que LSTM había registrado el menor ESR (1.048534). Las métricas temporales y las valoraciones humanas miden aspectos distintos de la fidelidad y no deben equipararse.
 
 En las preguntas abiertas aparecen observaciones relacionadas con volumen, timbre, ataque, sustain y artefactos. Estos comentarios contextualizan las calificaciones, pero no permiten establecer causas técnicas definitivas ni generalizar a una población de oyentes.
 
