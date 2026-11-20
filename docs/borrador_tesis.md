@@ -45,7 +45,8 @@
     - 6.2.5 Eficiencia computacional
     - 6.2.6 Compromiso entre fidelidad y eficiencia
     - 6.2.7 Generalización sobre material no visto
-    - 6.2.8 Fuentes de error e incertidumbre
+    - 6.2.8 Evaluación perceptual exploratoria
+    - 6.2.9 Fuentes de error e incertidumbre
 - **7. Conclusiones**
   - 7.1 Discusión
   - 7.2 Trabajo futuro
@@ -54,7 +55,7 @@
 
 # RESUMEN
 
-Este proyecto estudia el modelado black-box de dos efectos analógicos de guitarra eléctrica, un pedal Fender Starcaster Distortion y un compresor MXR Dyna Comp, mediante tres familias de aprendizaje profundo: una red neuronal convolucional (CNN), una red recurrente Long Short-Term Memory (LSTM) y una red convolucional temporal (TCN). Se construyó un conjunto de datos propio con pares de señales de entrada y salida para cuatro configuraciones de cada pedal. Los modelos se evaluaron con un protocolo común de fidelidad que incluye ESR, MAE, MR-STFT y error de loudness en LUFS, y con un benchmark de eficiencia en CPU y GPU. La matriz principal contiene 24 modelos entrenados desde cero. Para Starcaster, la TCN obtiene el menor ESR y MR-STFT promedio, mientras la CNN obtiene menor MAE y error LUFS. Para Dyna Comp, la LSTM obtiene el menor ESR y MR-STFT promedio y la CNN presenta menor MAE y error LUFS. En CPU la LSTM obtiene el mejor throughput, mientras que en GPU la TCN es la arquitectura más rápida. Los resultados muestran que no existe una arquitectura universalmente superior y que el compromiso entre fidelidad y eficiencia depende del efecto, de la métrica y de la plataforma de ejecución.
+Este proyecto estudia el modelado black-box de dos efectos analógicos de guitarra eléctrica, un pedal Fender Starcaster Distortion y un compresor MXR Dyna Comp, mediante tres familias de aprendizaje profundo: una red neuronal convolucional (CNN), una red recurrente Long Short-Term Memory (LSTM) y una red convolucional temporal (TCN). Se construyó un conjunto de datos propio con pares de señales de entrada y salida para cuatro configuraciones de cada pedal. Los modelos se evaluaron con un protocolo común de fidelidad que incluye ESR, MAE, MR-STFT y error de loudness en LUFS, y con un benchmark de eficiencia en CPU y GPU. La matriz principal contiene 24 modelos entrenados desde cero. Para Starcaster, la TCN obtiene el menor ESR y MR-STFT promedio, mientras la CNN obtiene menor MAE y error LUFS. Para Dyna Comp, la LSTM obtiene el menor ESR y MR-STFT promedio y la CNN presenta menor MAE y error LUFS. En CPU la LSTM obtiene el mejor throughput, mientras que en GPU la TCN es la arquitectura más rápida. Los resultados muestran que no existe una arquitectura universalmente superior y que el compromiso entre fidelidad y eficiencia depende del efecto, de la métrica y de la plataforma de ejecución. Como evaluación adicional se analizaron las respuestas de once oyentes externos sobre fragmentos de 25 segundos de material no visto. En Dyna Comp, la CNN obtuvo la mayor valoración media de fidelidad perceptual (8.45 sobre 10), aunque la LSTM logró el menor ESR objetivo en la prueba externa, lo cual evidencia que las medidas objetivas y las apreciaciones auditivas no necesariamente coinciden.
 
 **Palabras clave:** modelado virtual analógico, aprendizaje profundo, guitarra eléctrica, distorsión, compresión.
 
