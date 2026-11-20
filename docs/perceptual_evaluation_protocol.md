@@ -1,6 +1,6 @@
 # Protocolo de evaluación perceptual
 
-**Estado:** ejecutado; corte exploratorio 19-11-2026, n=9 (ocho externos y una respuesta del investigador)  
+**Estado:** ejecutado; corte exploratorio 19-11-2026, n=12 (once externos y una respuesta del investigador)  
 **Fecha:** 2026-11-19
 
 ## Objetivo
@@ -197,4 +197,4 @@ La evaluación debe interpretarse junto con ESR, MAE, MR-STFT, error LUFS, la pr
 
 ## Ejecución documentada
 
-Los WAV se convirtieron en nueve videos MP4 con imagen estática y audio AAC, subidos a YouTube como videos no listados e insertados en Google Forms. El dry es idéntico para ambos efectos y se reutilizó. Los participantes escucharon en condiciones no controladas; el orden A/B/C fue fijo. Las calificaciones reflejan fidelidad percibida bajo esas condiciones y no una prueba ABX o de laboratorio. Primer corte: nueve respuestas completas (ocho externas en el análisis principal).
+Los WAV se convirtieron en nueve videos MP4 con imagen estática y audio AAC, subidos a YouTube como videos no listados e insertados en Google Forms. El dry es idéntico para ambos efectos y se reutilizó. Los participantes escucharon en condiciones no controladas; el orden A/B/C fue fijo. Las calificaciones reflejan fidelidad percibida bajo esas condiciones y no una prueba ABX o de laboratorio. Corte actualizado: doce respuestas completas (once externas en el análisis principal), con última respuesta registrada el 19-11-2026 a las 23:51:58.
